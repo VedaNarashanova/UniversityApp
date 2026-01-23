@@ -1,0 +1,63 @@
+﻿@page
+@model UniversityApp.Pages.StudentRegisterModel
+@{
+    ViewData["Title"] = "Student Registration";
+}
+<link href="~/css/registration.css" rel="stylesheet" />
+
+<div class="page-content">
+
+    <h2>Student Registration</h2>
+    <form method="post">
+        <div>
+            <label>Name:</label>
+            <input asp-for="Name" required />
+        </div>
+        <div>
+            <label>Surname:</label>
+            <input asp-for="Surname" required />
+        </div>
+        <div>
+            <label>Date of Birth:</label>
+            <input asp-for="DateOfBirth" type="date" required />
+        </div>
+        <div>
+            <label>Address:</label>
+            <input asp-for="Address" required />
+        </div>
+        <div>
+            <label>City:</label>
+            <input asp-for="City" required />
+        </div>
+        <div>
+            <label>Telephone:</label>
+            <input asp-for="Telephone" required />
+        </div>
+        <div>
+            <label>Email:</label>
+            <input asp-for="Email" type="email" required />
+        </div>
+        <div>
+            <label>Username:</label>
+            <input asp-for="Username" required />
+        </div>
+        <div>
+            <label>Password:</label>
+            <input asp-for="Password" type="password" required />
+        </div>
+        <button type="submit">Register</button>
+    </form>
+</div>
+
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <p style="color:red">@Model.ErrorMessage</p>
+}
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+    <p style="color:green">@Model.SuccessMessage</p>
+    <a asp-page="/LogIn">
+        <button type="button">Go to Log in</button>    
+    </a>
+}

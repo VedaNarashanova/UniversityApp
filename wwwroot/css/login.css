@@ -1,0 +1,44 @@
+﻿.login-container {
+    min-height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-card {
+    width: 400px;
+    padding: 30px;
+    border-radius: 10px;
+    background-color: white;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.login-title {
+    text-align: center;
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+
+.login-button {
+    width: 100%;
+}
+
+
+.register-container {
+    margin-top: 15px;
+    text-align: center;
+}
+
+    .register-container .btn {
+        padding: 10px 20px;
+        background-color: #28a745; /* green */
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        text-decoration: none; /* remove underline */
+    }
+
+        .register-container .btn:hover {
+            background-color: #218838; /* darker green on hover */
+        }

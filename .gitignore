@@ -1,0 +1,20 @@
+# Visual Studio temporary files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build output
+bin/
+obj/
+
+# Rider, JetBrains
+.idea/
+
+# Publish folders
+publish/
+
+# OS generated files
+Thumbs.db
+*.DS_Store
