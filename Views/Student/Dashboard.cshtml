@@ -3,96 +3,106 @@
 @{
     Layout = "_Layout";
     ViewData["Title"] = "Student Dashboard";
+
+    // Get the query string value safely
+    string activeTab = Context.Request.Query["activeTab"];
 }
 
 <div class="container mt-4">
     <h2>Student Dashboard</h2>
 
-    <!-- Tabs navigation -->
-    <ul class="nav nav-tabs" id="dashboardTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="classes-tab" data-bs-toggle="tab" data-bs-target="#classes" type="button" role="tab">
-                Classes & Grades
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab">
-                Personal Info
-            </button>
-        </li>
-    </ul>
+    <form method="post" asp-controller="Student" asp-action="Dashboard">
+        <input type="hidden" name="StudentId" value="@Model.StudentId" />
+        <input type="hidden" name="activeTab" value="personal" /> @* Pass this to reload personal tab after save *@
 
-    <!-- Tabs content -->
-    <div class="tab-content mt-3" id="dashboardTabsContent">
-        <!-- Classes & Grades tab -->
-        <div class="tab-pane fade show active" id="classes" role="tabpanel">
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>Class</th>
-                        <th>Grade</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model.ClassesAndGrades)
-                    {
-                        <tr>
-                            <td>@item.ClassName</td>
-                            <td>@(item.Grade.HasValue? item.Grade.ToString() : "Not graded yet")</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+        <!-- Tabs -->
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <button class="nav-link @(string.IsNullOrEmpty(activeTab) || activeTab != "personal" ? "active" : "")"
+                        data-bs-toggle="tab" data-bs-target="#classes" type="button">
+                    Classes & Grades
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link @(activeTab == "personal" ? "active" : "")"
+                        data-bs-toggle="tab" data-bs-target="#personal" type="button">
+                    Personal Info
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content mt-3">
+            <!-- Classes -->
+            <div class="tab-pane fade @(string.IsNullOrEmpty(activeTab) || activeTab != "personal" ? "show active" : "")" id="classes">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr><th>Class</th><th>Grade</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.ClassesAndGrades)
+                        {
+                            <tr>
+                                <td>@item.ClassName</td>
+                                <td>@(item.Grade.HasValue? item.Grade.ToString() : "Not graded yet")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Personal Info -->
+            <div class="tab-pane fade @(activeTab == "personal" ? "show active" : "")" id="personal">
+                <dl class="row">
+                    <dt class="col-sm-3">Index</dt>
+                    <dd class="col-sm-9">@Model.Index</dd>
+
+                    <dt class="col-sm-3">Name</dt>
+                    <dd class="col-sm-9">@Model.Name</dd>
+
+                    <dt class="col-sm-3">Surname</dt>
+                    <dd class="col-sm-9">@Model.Surname</dd>
+
+                    <dt class="col-sm-3">Date of Birth</dt>
+                    <dd class="col-sm-9">@Model.DateOfBirth.ToShortDateString()</dd>
+
+                    <dt class="col-sm-3">Address</dt>
+                    <dd class="col-sm-9">
+                        <input type="text" class="form-control" name="Address" value="@Model.Address" />
+                    </dd>
+
+                    <dt class="col-sm-3">City</dt>
+                    <dd class="col-sm-9">
+                        <input type="text" class="form-control" name="City" value="@Model.City" />
+                    </dd>
+
+                    <dt class="col-sm-3">Email</dt>
+                    <dd class="col-sm-9">
+                        <input type="text" class="form-control" name="Email" value="@Model.Email" />
+                    </dd>
+
+                    <dt class="col-sm-3">Phone</dt>
+                    <dd class="col-sm-9">
+                        <input type="text" class="form-control" name="Phone" value="@Model.Phone" />
+                    </dd>
+                </dl>
+            </div>
+
+
+
         </div>
 
-        <!-- Personal Info tab -->
-        <div class="tab-pane fade" id="personal" role="tabpanel">
-            <dl class="row">
-                <dt class="col-sm-3">Index</dt>
-                <dd class="col-sm-9">@Model.Index</dd>
-
-                <dt class="col-sm-3">Name</dt>
-                <dd class="col-sm-9">@Model.Name</dd>
-
-                <dt class="col-sm-3">Surname</dt>
-                <dd class="col-sm-9">@Model.Surname</dd>
-
-                <dt class="col-sm-3">Date of Birth</dt>
-                <dd class="col-sm-9">@Model.DateOfBirth.ToShortDateString()</dd>
-
-                <dt class="col-sm-3">Address</dt>
-                <dd class="col-sm-9">@Model.Address</dd>
-
-                <dt class="col-sm-3">City</dt>
-                <dd class="col-sm-9">@Model.City</dd>
-
-                <dt class="col-sm-3">Email</dt>
-                <dd class="col-sm-9">@Model.Email</dd>
-
-                <dt class="col-sm-3">Phone</dt>
-                <dd class="col-sm-9">@Model.Phone</dd>
-            </dl>
-        </div>
-    </div>
+        <button type="submit" class="btn btn-success mt-3">Save</button>
+    </form>
 </div>
 
-
-@* <h2>Your Classes and Grades</h2>
-
-<table class="table table-boardered table-striped">
-    <thead>
-        <tr>
-            <th>Class</th>
-            <th>Grade</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach(var item in Model)
-        {
-            <tr>
-                <td>@item.ClassName</td>
-                <td>@(item.Grade.HasValue ? item.Grade.ToString() : "Not graded yet")</td>
-            </tr>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // Activate Personal Info tab if activeTab=personal
+        var activeTab = '@activeTab';
+        if(activeTab === "personal") {
+            var tabTrigger = document.querySelector('button[data-bs-target="#personal"]');
+            var tab = new bootstrap.Tab(tabTrigger);
+            tab.show();
         }
-    </tbody>
-</table> *@
+    });
+</script>

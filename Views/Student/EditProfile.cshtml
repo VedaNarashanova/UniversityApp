@@ -1,0 +1,32 @@
+﻿@* @model UniversityApp.Models.StudentDashboardViewModel
+@{
+    Layout = "_Layout";
+}
+
+<h2>Edit Profile</h2>
+<form method="post">
+    <input type="hidden" asp-for="StudentId" />
+
+    <div class="mb-3">
+        <label>Address</label>
+        <input asp-for="Address" class="form-cintrol" />
+    </div>
+
+    <div class="mb-3">
+        <label>City</label>
+        <input asp-for="City" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Email</label>
+        <input asp-for="Email" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Phone</label>
+        <input asp-for="Phone" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Dashboard" asp-route-studentId="@Model.StudentId" class="btn btn secondary"> Cancel</a>
+</form> *@

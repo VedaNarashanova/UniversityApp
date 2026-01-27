@@ -1,6 +1,7 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Data.SqlClient;
+using System;
 
 namespace UniversityApp.Pages
 {
@@ -18,67 +19,65 @@ namespace UniversityApp.Pages
         {
         }
 
+        // 🔹 Get student_id from user_id
         private int GetStudentId(int userId)
         {
             using SqlConnection conn = new SqlConnection(
                 "Server=localhost\\SQLEXPRESS;Database=UniversityDB;Trusted_Connection=True;TrustServerCertificate=True;");
             conn.Open();
 
-            string query = "SELECT student_id FROM Student WHERE user_id=@userId";
+            string query = "SELECT student_id FROM Student WHERE user_id = @userId";
             using SqlCommand cmd = new SqlCommand(query, conn);
             cmd.Parameters.AddWithValue("@userId", userId);
 
-            return (int)cmd.ExecuteScalar();
-        }
+            object result = cmd.ExecuteScalar();
 
+            if (result == null)
+                return 0;
+
+            return Convert.ToInt32(result);
+        }
 
         public IActionResult OnPost()
         {
-            // Connection string to your SQL Server database
-            string connectionString ="Server=localhost\\SQLEXPRESS;Database=UniversityDB;Trusted_Connection=True;TrustServerCertificate=True;";
+            string connectionString =
+                "Server=localhost\\SQLEXPRESS;Database=UniversityDB;Trusted_Connection=True;TrustServerCertificate=True;";
 
+            using SqlConnection conn = new SqlConnection(connectionString);
+            conn.Open();
 
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            string query = "SELECT user_id, role FROM dbo.Users WHERE username = @username AND password = @password";
+
+            using SqlCommand cmd = new SqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@username", Username);
+            cmd.Parameters.AddWithValue("@password", Password);
+
+            using SqlDataReader reader = cmd.ExecuteReader();
+
+            if (reader.Read())
             {
-                conn.Open();
-                string query = "SELECT user_id,role FROM dbo.Users WHERE username=@username AND password=@password";
+                int userId = (int)reader["user_id"];
+                string role = reader["role"].ToString();
 
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+                reader.Close(); // REQUIRED before new DB query
+
+                if (role == "student")
                 {
-                    cmd.Parameters.AddWithValue("@username", Username);
-                    cmd.Parameters.AddWithValue("@password", Password);
+                    int studentId = GetStudentId(userId);
 
-                    //var role = cmd.ExecuteScalar();
+                    System.Diagnostics.Debug.WriteLine("LOGIN studentId = " + studentId);
 
-                    var reader = cmd.ExecuteReader();//runs a SELECT query aka the query we have and return the rows aka return the info for the user whos username and pass match
-                    if (reader.Read())
-                    {
-                        int userId = (int)reader["user_id"];
-                        string role = reader["role"].ToString();
-
-                        if (role.ToString() == "student") { 
-                             int studentId = GetStudentId(userId);
-                        return RedirectToAction("Dashboard", "Student", new { studentId });} //Dashboard is the method, Student is StudentController where the method is
-                    }
-                    ErrorMessage = "Invalid username or password";
-                    return Page();
-                    //if (role != null)
-                    //{
-                    //    // Redirect based on role
-                    //    if (role.ToString() == "student")
-                    //        return RedirectToPage("StudentDashboard"); 
-                    //    else if (role.ToString() == "professor")
-                    //        return RedirectToPage("ProfessorDashboard"); 
-                    //}
-                    //else
-                    //{
-                    //    // Invalid login
-                    //    ErrorMessage = "Invalid username or password";
-                    //    return Page();
-                    //}
+                    return RedirectToAction(
+                        "Dashboard",
+                        "Student",
+                        new { studentId = studentId }
+                    );
                 }
+
+                // (later you can add professor redirect here)
             }
 
+            ErrorMessage = "Invalid username or password";
             return Page();
         }
     }
