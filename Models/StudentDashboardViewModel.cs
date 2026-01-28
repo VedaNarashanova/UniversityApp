@@ -10,7 +10,7 @@
         public string City { get; set; }
         public string Email { get; set; }
         public string Phone { get; set; }
-        public string Index { get;set; }
+        public string Index { get; set; }
         public int StudentId { get; set; }
 
 
@@ -21,10 +21,8 @@
             public int ClassId { get; set; }
             public string ClassName { get; set; }
             public string Professor { get; set; }
-            public int Semester
-            {
-                get; set;
-            }
+            public int Semester { get; set; }
         }
     }
+
 }

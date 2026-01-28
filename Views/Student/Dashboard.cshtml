@@ -5,7 +5,7 @@
     string activeTab = ViewBag.ActiveTab ?? "classes";
 }
 
-<!--  THIS ONEEEEEEEEEEEEEEEEEE -->
+
 
 <div class="container mt-4">
     <h2>Student Dashboard</h2>
@@ -83,18 +83,29 @@
                         <input type="text" class="form-control" name="City" value="@Model.City" />
                     </dd>
 
+                   
                     <dt class="col-sm-3">Email</dt>
                     <dd class="col-sm-9">
-                        <input type="text" class="form-control" name="Email" value="@Model.Email" />
+                        <input type="text" class="form-control @(ViewData.ModelState["Email"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                               name="Email" value="@Model.Email" />
+                        <span class="text-danger">
+                            @Html.ValidationMessage("Email")
+                        </span>
                     </dd>
 
+                
                     <dt class="col-sm-3">Phone</dt>
-                    <dd class="col-sm-9">
-                        <input type="text" class="form-control" name="Phone" value="@Model.Phone" />
-                    </dd>
+                        <dd class="col-sm-9">
+                            <input type="text" class="form-control @(ViewData.ModelState["Phone"]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                                   name="Phone" value="@Model.Phone" />
+                        <span class="text-danger" id="phoneError">
+                                @Html.ValidationMessage("Phone")
+                            </span>
+                        </dd>
                 </dl>
 
                 <button type="submit" class="btn btn-success mt-3">Save</button>
+
             </form>
         </div>
 
@@ -130,3 +141,67 @@
 
     </div>
 </div>
+
+
+@* <script>
+    const emailInput = document.querySelector('input[name="Email"]');
+    const saveButton = document.getElementById('saveButton');
+    const emailError = document.getElementById('emailError');
+
+    function validateEmail() {
+        const email = emailInput.value.trim();
+        const valid = email.endsWith("@@gmail.com") || email.endsWith("@@yahoo.com");
+
+        if (!valid) {
+            emailError.style.display = "block";
+            saveButton.disabled = true;
+        } else {
+            emailError.style.display = "none";
+            saveButton.disabled = false;
+        }
+    }
+
+    // Validate on page load and on every input
+    validateEmail();
+    emailInput.addEventListener('input', validateEmail);
+</script> *@
+<script>
+    const emailInput = document.querySelector('input[name="Email"]');
+    const phoneInput = document.querySelector('input[name="Phone"]');
+    const saveButton = document.getElementById('saveButton');
+    const phoneError = document.getElementById('phoneError');
+
+    function validateForm() {
+        const email = emailInput.value.trim();
+        const phone = phoneInput.value.replace(/\s+/g, ''); // remove spaces for validation
+
+        // --- Email validation ---
+        const emailValid = email.endsWith("@@gmail.com") || email.endsWith("@@yahoo.com");
+        if (!emailValid) {
+            emailInput.classList.add("is-invalid");
+        } else {
+            emailInput.classList.remove("is-invalid");
+        }
+
+        // --- Phone validation (exactly 9 digits, ignore spaces) ---
+        const phoneValid = /^\d{9}$/.test(phone);
+        if (!phoneValid) {
+            phoneInput.classList.add("is-invalid");
+            phoneError.textContent = "Phone format has to be 123 456 789";
+        } else {
+            phoneInput.classList.remove("is-invalid");
+            phoneError.textContent = ""; // remove message if valid
+        }
+
+        // Disable save if either field invalid
+        saveButton.disabled = !emailValid || !phoneValid;
+    }
+
+    // Run on page load and whenever the user types
+    validateForm();
+    emailInput.addEventListener('input', validateForm);
+    phoneInput.addEventListener('input', validateForm);
+</script>
+
+
+
