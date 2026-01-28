@@ -1,57 +1,65 @@
 ﻿@model UniversityApp.Models.StudentDashboardViewModel
-
 @{
     Layout = "_Layout";
     ViewData["Title"] = "Student Dashboard";
-
-    // Get the query string value safely
-    string activeTab = Context.Request.Query["activeTab"];
+    string activeTab = ViewBag.ActiveTab ?? "classes";
 }
+
+<!--  THIS ONEEEEEEEEEEEEEEEEEE -->
 
 <div class="container mt-4">
     <h2>Student Dashboard</h2>
 
-    <form method="post" asp-controller="Student" asp-action="Dashboard">
-        <input type="hidden" name="StudentId" value="@Model.StudentId" />
-        <input type="hidden" name="activeTab" value="personal" /> @* Pass this to reload personal tab after save *@
+    <!-- Tabs -->
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <button class="nav-link @(activeTab != "personal" && activeTab != "classesToEnroll" ? "active" : "")"
+                    data-bs-toggle="tab" data-bs-target="#classes" type="button">
+                Classes & Grades
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link @(activeTab == "personal" ? "active" : "")"
+                    data-bs-toggle="tab" data-bs-target="#personal" type="button">
+                Personal Info
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link @(activeTab == "classesToEnroll" ? "active" : "")"
+                    data-bs-toggle="tab" data-bs-target="#available" type="button">
+                Classes to Enroll
+            </button>
+        </li>
+    </ul>
 
-        <!-- Tabs -->
-        <ul class="nav nav-tabs">
-            <li class="nav-item">
-                <button class="nav-link @(string.IsNullOrEmpty(activeTab) || activeTab != "personal" ? "active" : "")"
-                        data-bs-toggle="tab" data-bs-target="#classes" type="button">
-                    Classes & Grades
-                </button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link @(activeTab == "personal" ? "active" : "")"
-                        data-bs-toggle="tab" data-bs-target="#personal" type="button">
-                    Personal Info
-                </button>
-            </li>
-        </ul>
+    <div class="tab-content mt-3">
 
-        <div class="tab-content mt-3">
-            <!-- Classes -->
-            <div class="tab-pane fade @(string.IsNullOrEmpty(activeTab) || activeTab != "personal" ? "show active" : "")" id="classes">
-                <table class="table table-bordered">
-                    <thead>
-                        <tr><th>Class</th><th>Grade</th></tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model.ClassesAndGrades)
-                        {
-                            <tr>
-                                <td>@item.ClassName</td>
-                                <td>@(item.Grade.HasValue? item.Grade.ToString() : "Not graded yet")</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+        <!-- Classes & Grades -->
+        <div class="tab-pane fade @(activeTab != "personal" && activeTab != "classesToEnroll" ? "show active" : "")" id="classes">
+            <table class="table table-bordered">
+                <thead>
+                    <tr><th>Class</th><th>Grade</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ClassesAndGrades)
+                    {
+                        <tr>
+                            <td>@item.ClassName</td>
+                            <td>@(item.Grade.HasValue? item.Grade.ToString() : "Not graded yet")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
 
-            <!-- Personal Info -->
-            <div class="tab-pane fade @(activeTab == "personal" ? "show active" : "")" id="personal">
+        <!-- Personal Info -->
+        <div class="tab-pane fade @(activeTab == "personal" ? "show active" : "")" id="personal">
+            <form method="post" asp-action="Dashboard" asp-controller="Student">
+                @Html.AntiForgeryToken() <!-- So personal info doesnt get deleted -->
+                <input type="hidden" name="StudentId" value="@Model.StudentId" />
+                <input type="hidden" name="FormType" value="PersonalInfo" />
+                <input type="hidden" name="activeTab" value="personal" />
+
                 <dl class="row">
                     <dt class="col-sm-3">Index</dt>
                     <dd class="col-sm-9">@Model.Index</dd>
@@ -85,24 +93,40 @@
                         <input type="text" class="form-control" name="Phone" value="@Model.Phone" />
                     </dd>
                 </dl>
-            </div>
 
-
-
+                <button type="submit" class="btn btn-success mt-3">Save</button>
+            </form>
         </div>
 
-        <button type="submit" class="btn btn-success mt-3">Save</button>
-    </form>
-</div>
+        <!-- Classes to Enroll -->
+        <div class="tab-pane fade @(activeTab == "classesToEnroll" ? "show active" : "")" id="available">
+            <table class="table table-bordered">
+                <thead>
+                    <tr><th>Class</th><th>Semester</th><th>Professor</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model.AvailableClasses)
+                    {
+                        <tr>
+                            <td>@c.ClassName</td>
+                            <td>@c.Semester</td>
+                            <td>@c.Professor</td>
+                            <td>
+                                @* <form method="post" asp-action="Enroll" asp-controller="Student"> *@
+                                <form method="post" action="/Student/Enroll">
+                                    @Html.AntiForgeryToken() <!-- So personal info doesnt get deleted -->
+                                    <input type="hidden" name="studentId" value="@Model.StudentId" />
+                                    <input type="hidden" name="classId" value="@c.ClassId" />
 
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        // Activate Personal Info tab if activeTab=personal
-        var activeTab = '@activeTab';
-        if(activeTab === "personal") {
-            var tabTrigger = document.querySelector('button[data-bs-target="#personal"]');
-            var tab = new bootstrap.Tab(tabTrigger);
-            tab.show();
-        }
-    });
-</script>
+                                  
+                                    <button type="submit" class="btn btn-primary btn-sm">Enroll</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
