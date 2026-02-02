@@ -1,0 +1,31 @@
+﻿@model UniversityApp.Models.CreateClassViewModel
+@{
+    ViewData["Title"] = "Add Class";
+    Layout = "_Layout";
+}
+
+<h2>Add New Class</h2>
+
+<form method="post" action="/Professor/AddClass" class="mt-4">
+    @Html.AntiForgeryToken() <!-- important! -->
+
+    <input type="hidden" name="ProfessorId" value="@Model.ProfessorId" />
+
+    <div class="mb-3">
+        <label for="Name" class="form-label">Class Name</label>
+        <input id="Name" name="Name" type="text" class="form-control" value="@Model.Name" required />
+    </div>
+
+    <div class="mb-3">
+        <label for="Semester" class="form-label">Semester</label>
+        <input id="Semester" name="Semester" type="number" min="1" max="8" class="form-control" value="@Model.Semester" required />
+    </div>
+
+    <button type="submit" class="btn btn-success">
+        Add Class
+    </button>
+
+    <a href="/Professor/Dashboard?professorId=@Model.ProfessorId" class="btn btn-secondary ms-2">
+        Cancel
+    </a>
+</form>

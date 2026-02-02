@@ -1,6 +1,83 @@
-﻿namespace UniversityApp.Views.Professor
-{
-    public class Dashboard
-    {
-    }
+﻿@model UniversityApp.Models.ProfessorDashboardViewModel
+
+@{
+    Layout = "_Layout";
 }
+
+<h2>Professor Dashboard</h2>
+
+@foreach (var cls in Model.Classes)
+{
+    <div class="card mb-4">
+        <div class="card-header">
+            <strong>@cls.ClassName</strong>
+        </div>
+
+        <div class="card-body">
+            @if (cls.Students.Count == 0)
+            {
+                <p>No students enrolled.</p>
+            }
+            else
+            {
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Index</th>
+                            <th>Name</th>
+                            <th>Surname</th>
+                            <th>Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var student in cls.Students)
+                        {
+                            <tr>
+                                <td>@student.Index</td>
+                                <td>@student.Name</td>
+                                <td>@student.Surname</td>
+                                @* <td>@(student.Grade.HasValue ? student.Grade.ToString() : "Not Graded Yet")</td> *@
+                                <td>
+                                    @if (student.Grade.HasValue)
+                                    {
+                                        @student.Grade
+                                    }
+                                    else
+                                    {
+                                        <form method="post" action="/Professor/SetGrade" class="d-flex gap-2">
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden" name="studentId" value="@student.StudentId" />
+                                            <input type="hidden" name="classId" value="@cls.ClassId" />
+                                            <input type="hidden" name="professorId" value="@Model.ProfessorId" /> 
+
+                                            <input type="text"
+                                                   name="grade"
+                                                   pattern="^(5|6|7|8|9|10)$"
+                                                   title="Grade must be between 5 and 10"
+                                                   class="form-control form-control-sm"
+                                                   style="width:70px"
+                                                   required />
+
+                                            <button type="submit" class="btn btn-sm btn-primary">
+                                                Grade
+                                            </button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+       
+    </div>
+}
+
+<div class="text-end mt-4">
+    <a href="/Professor/AddClass?professorId=@Model.ProfessorId"
+       class="btn btn-primary">
+        + Add Class
+    </a>
+</div>

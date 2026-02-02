@@ -22,6 +22,16 @@ app.UseRouting();
 
 app.UseAuthorization();
 
+
+// Redirect root URL to Login page
+app.MapGet("/", context =>
+{
+    context.Response.Redirect("/LogIn");
+    return Task.CompletedTask;
+});
+
+
+
 //MVC routes
 app.MapControllerRoute(
     name: "default",

@@ -74,7 +74,15 @@ namespace UniversityApp.Pages
                     );
                 }
 
-                // (later you can add professor redirect here)
+                if (role == "professor")
+                {
+                    return RedirectToAction(
+                        "Dashboard",
+                        "Professor",
+                        new { professorId = userId }
+                    );
+                }
+
             }
 
             ErrorMessage = "Invalid username or password";
