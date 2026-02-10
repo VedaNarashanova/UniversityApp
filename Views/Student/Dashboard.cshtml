@@ -36,6 +36,22 @@
 
         <!-- Classes & Grades -->
         <div class="tab-pane fade @(activeTab != "personal" && activeTab != "classesToEnroll" ? "show active" : "")" id="classes">
+
+
+            <div class="mb-3 p-3 border rounded bg-light">
+                <strong>Student Statistics:</strong>
+                <ul class="mb-0">
+                    <li>Total classes: @Model.GradeStats.TotalClasses</li>
+                    <li>Graded classes: @Model.GradeStats.GradedClasses</li>
+                    <li>Average grade: @(Model.GradeStats.AverageGrade.HasValue? Model.GradeStats.AverageGrade.Value.ToString("0.00") : "-")</li>
+                    <li>Median grade: @(Model.GradeStats.MedianGrade.HasValue? Model.GradeStats.MedianGrade.Value.ToString("0.00") : "-")</li>
+                    <li>Mode grade: @(Model.GradeStats.ModeGrade.HasValue? Model.GradeStats.ModeGrade.Value.ToString() : "-")</li>
+                </ul>
+            </div>
+
+
+
+
             <table class="table table-bordered">
                 <thead>
                     <tr><th>Class</th><th>Grade</th></tr>

@@ -1,0 +1,75 @@
+﻿@model UniversityApp.Models.Professor.AddStudentToClassViewModel
+@{
+    Layout = "_Layout";
+}
+
+<h2>Add Student to Classes</h2>
+
+@* <form method="post" action="LoadAvailableClasses">
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" asp-for="ProfessorId" />
+
+    <div class="mb-3">
+        <label>Student Index</label>
+        <input asp-for="StudentIndex" class="form-control" required />
+    </div>
+
+    <button type="submit" class="btn btn-secondary">
+        Load Classes
+    </button>
+</form> *@
+<form method="post" action="/Professor/LoadAvailableClasses">
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" name="ProfessorId" value="@Model.ProfessorId" />
+
+    <div class="mb-3">
+        <label>Student Index</label>
+        <input name="StudentIndex"
+               class="form-control"
+               required />
+    </div>
+
+    <button type="submit" class="btn btn-secondary">
+        Load Classes
+    </button>
+</form>
+
+@if (Model.ClassesLoaded)
+{
+    <hr />
+
+    <form method="post" action="/Professor/AddStudents">
+        @Html.AntiForgeryToken()
+
+        @* <input type="hidden" asp-for="ProfessorId" />
+        <input type="hidden" asp-for="StudentIndex" /> *@
+        <input type="hidden" name="ProfessorId" value="@Model.ProfessorId" />
+        <input type="hidden" name="StudentIndex" value="@Model.StudentIndex" />
+
+        <h5>Select classes</h5>
+
+        @foreach (var cls in Model.Classes)
+        {
+            <div class="form-check">
+                <input class="form-check-input"
+                       type="checkbox"
+                       name="SelectedClassIds"
+                       value="@cls.ClassId" />
+
+                <label class="form-check-label">
+                    @cls.ClassName
+                </label>
+            </div>
+        }
+
+        <div class="text-danger">
+            @Html.ValidationSummary()
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3">
+            Add Student
+        </button>
+    </form>
+}

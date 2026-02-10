@@ -1,4 +1,9 @@
-﻿<!DOCTYPE html>
+﻿@{
+    // Get the current path e.g. "/LogIn"
+    var currentPage = Context.Request.Path;
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -8,6 +13,8 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/UniversityApp.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"/>
+
 </head>
 <body>
     <header>
@@ -26,6 +33,14 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
                         </li>
+                        @if (!currentPage.Equals("/LogIn", StringComparison.OrdinalIgnoreCase))
+                        {
+                            <li class="nav-item ms-auto">
+                                <form method="get" action="/LogIn">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Sign Out</button>
+                                </form>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>

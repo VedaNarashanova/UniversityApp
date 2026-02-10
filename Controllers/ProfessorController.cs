@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
-using UniversityApp.Models;
+using UniversityApp.Models.Professor;
 
 public class ProfessorController : Controller
 {
@@ -118,7 +118,9 @@ public class ProfessorController : Controller
         using SqlConnection conn = new SqlConnection(connectionString);
         conn.Open();
 
-        string query = @"INSERT INTO Class (name,semester,professor_id) VALUES (@name, @semester, @professorId)";
+        string query = @"
+                    INSERT INTO Class (name,semester,professor_id)
+                    VALUES (@name, @semester, @professorId)";
 
         using SqlCommand cmd = new SqlCommand(query, conn);
         cmd.Parameters.AddWithValue("@name", model.Name);
@@ -129,4 +131,207 @@ public class ProfessorController : Controller
 
         return RedirectToAction("Dashboard", new {professorId = model.ProfessorId});
     }
+
+    //___________________________________________________________________________________________________________
+
+    [HttpGet]
+    public IActionResult AddStudents(int professorId)
+    {
+        var model = new AddStudentToClassViewModel
+        {
+            ProfessorId = professorId
+        };
+        using SqlConnection conn = new SqlConnection(connectionString);
+        conn.Open();
+
+        string query = @"
+                    SELECT class_id, name
+                    FROM Class
+                    WHERE professor_id = @professorId";
+
+        using SqlCommand cmd = new SqlCommand(query, conn);
+        cmd.Parameters.AddWithValue("@professorId", professorId);
+
+        using SqlDataReader reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            model.Classes.Add(new ProfessorClassViewModel
+            {
+                ClassId = (int)reader["class_id"],
+                ClassName = reader["name"].ToString()
+            });
+        }
+
+        return View("AddStudents", model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult LoadAvailableClasses(AddStudentToClassViewModel model)
+    {
+        //return Content("HIT LOADAVAILABLECLASSES");
+        if (string.IsNullOrEmpty(model.StudentIndex))
+        {
+            return Content("StudentIndex is EMPTY");
+        }
+        using SqlConnection conn = new SqlConnection(connectionString);
+        conn.Open();
+
+        // 1️⃣ Get student ID
+        int studentId;
+        string studentQuery = @"
+        SELECT student_id
+        FROM Student
+        WHERE index_number = @index";
+
+        using (SqlCommand cmd = new SqlCommand(studentQuery, conn))
+        {
+            cmd.Parameters.AddWithValue("@index", model.StudentIndex);
+            var result = cmd.ExecuteScalar();
+
+            if (result == null)
+            {
+                ModelState.AddModelError("", "Student not found.");
+                return View("AddStudents", model);
+            }
+
+            studentId = (int)result;
+        }
+
+        // 2️⃣ Get professor classes student is NOT enrolled in
+        string classQuery = @"
+        SELECT c.class_id, c.name
+        FROM Class c
+        WHERE c.professor_id = @professorId
+        AND c.class_id NOT IN (
+            SELECT e.class_id
+            FROM Enrollment e
+            WHERE e.student_id = @studentId
+        )";
+
+        using SqlCommand classCmd = new SqlCommand(classQuery, conn);
+        classCmd.Parameters.AddWithValue("@professorId", model.ProfessorId);
+        classCmd.Parameters.AddWithValue("@studentId", studentId);
+
+        using SqlDataReader reader = classCmd.ExecuteReader();
+        while (reader.Read())
+        {
+            model.Classes.Add(new ProfessorClassViewModel
+            {
+                ClassId = (int)reader["class_id"],
+                ClassName = reader["name"].ToString()
+            });
+        }
+
+        model.ClassesLoaded = true;
+        return View("AddStudents", model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult AddStudents(AddStudentToClassViewModel model)
+    {
+        if (model.SelectedClassIds == null || !model.SelectedClassIds.Any())
+        {
+            ModelState.AddModelError("", "No classes were selected.");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            // 🔁 reload available classes again
+            using SqlConnection conn = new SqlConnection(connectionString);
+            conn.Open();
+
+            int studentId;
+            string studentQuery = "SELECT student_id FROM Student WHERE index_number = @index";
+            using (SqlCommand cmd = new SqlCommand(studentQuery, conn))
+            {
+                cmd.Parameters.AddWithValue("@index", model.StudentIndex);
+                studentId = (int)cmd.ExecuteScalar();
+            }
+
+            string classQuery = @"
+            SELECT c.class_id, c.name
+            FROM Class c
+            WHERE c.professor_id = @professorId
+            AND c.class_id NOT IN (
+                SELECT e.class_id
+                FROM Enrollment e
+                WHERE e.student_id = @studentId
+            )";
+
+            using SqlCommand classCmd = new SqlCommand(classQuery, conn);
+            classCmd.Parameters.AddWithValue("@professorId", model.ProfessorId);
+            classCmd.Parameters.AddWithValue("@studentId", studentId);
+
+            using SqlDataReader reader = classCmd.ExecuteReader();
+            while (reader.Read())
+            {
+                model.Classes.Add(new ProfessorClassViewModel
+                {
+                    ClassId = (int)reader["class_id"],
+                    ClassName = reader["name"].ToString()
+                });
+            }
+
+            model.ClassesLoaded = true;
+            return View("AddStudents", model);
+        }
+
+        // ✅ VALID → insert into Enrollment
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            conn.Open();
+
+            int studentId;
+            string studentQuery = "SELECT student_id FROM Student WHERE index_number = @index";
+            using (SqlCommand cmd = new SqlCommand(studentQuery, conn))
+            {
+                cmd.Parameters.AddWithValue("@index", model.StudentIndex);
+                studentId = (int)cmd.ExecuteScalar();
+            }
+
+            foreach (int classId in model.SelectedClassIds)
+            {
+                string insertQuery = @"
+                IF NOT EXISTS (
+                    SELECT 1 FROM Enrollment
+                    WHERE student_id = @studentId AND class_id = @classId
+                )
+                INSERT INTO Enrollment (student_id, class_id)
+                VALUES (@studentId, @classId)";
+
+                using SqlCommand cmd = new SqlCommand(insertQuery, conn);
+                cmd.Parameters.AddWithValue("@studentId", studentId);
+                cmd.Parameters.AddWithValue("@classId", classId);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        // ✅ REDIRECT (this part was already correct)
+        return RedirectToAction("Dashboard", new { professorId = model.ProfessorId });
+    }
+    //_________________________________________________________________________________________________________
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult RemoveStudent(int studentId, int classId, int professorId)
+    {
+        using SqlConnection conn = new SqlConnection(connectionString);
+        conn.Open();
+
+        string query = @"
+        DELETE FROM Enrollment
+        WHERE student_id = @studentId AND class_id = @classId";
+
+        using SqlCommand cmd = new SqlCommand(query, conn);
+        cmd.Parameters.AddWithValue("@studentId", studentId);
+        cmd.Parameters.AddWithValue("@classId", classId);
+
+        cmd.ExecuteNonQuery();
+
+        // redirect back to dashboard
+        return RedirectToAction("Dashboard", new { professorId });
+    }
+
 }

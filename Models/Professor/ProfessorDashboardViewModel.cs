@@ -1,4 +1,4 @@
-﻿namespace UniversityApp.Models
+﻿namespace UniversityApp.Models.Professor
 {
     public class ProfessorDashboardViewModel
     {

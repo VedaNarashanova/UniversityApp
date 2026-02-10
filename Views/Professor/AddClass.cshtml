@@ -1,4 +1,4 @@
-﻿@model UniversityApp.Models.CreateClassViewModel
+﻿@model UniversityApp.Models.Professor.CreateClassViewModel
 @{
     ViewData["Title"] = "Add Class";
     Layout = "_Layout";
@@ -7,7 +7,7 @@
 <h2>Add New Class</h2>
 
 <form method="post" action="/Professor/AddClass" class="mt-4">
-    @Html.AntiForgeryToken() <!-- important! -->
+    @Html.AntiForgeryToken() 
 
     <input type="hidden" name="ProfessorId" value="@Model.ProfessorId" />
 
