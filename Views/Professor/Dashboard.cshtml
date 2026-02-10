@@ -13,6 +13,30 @@
         </div>
 
         <div class="card-body">
+
+            @* --- Class Statistics --- *@
+            @if (cls.Stats != null)
+            {
+                <div class="mb-3 row text-center">
+                    <div class="col">
+                        <strong>Total Students:</strong> @cls.Stats.TotalStudents
+                    </div>
+                    <div class="col">
+                        <strong>Graded Students:</strong> @cls.Stats.GradedStudents
+                    </div>
+                    <div class="col">
+                        <strong>Average Grade:</strong> @(cls.Stats.AverageGrade.HasValue? cls.Stats.AverageGrade.Value.ToString("0.00") : "-")
+                    </div>
+                    <div class="col">
+                        <strong>Median Grade:</strong> @(cls.Stats.MedianGrade.HasValue? cls.Stats.MedianGrade.Value.ToString("0.00") : "-")
+                    </div>
+                    <div class="col">
+                        <strong>Mode Grade:</strong> @(cls.Stats.ModeGrade.HasValue? cls.Stats.ModeGrade.Value.ToString() : "-")
+                    </div>
+                </div>
+            }
+
+            @* --- Student Table --- *@
             @if (cls.Students.Count == 0)
             {
                 <p>No students enrolled.</p>
@@ -78,13 +102,11 @@
 }
 
 <div class="text-end mt-4">
-    <a href="/Professor/AddClass?professorId=@Model.ProfessorId"
-       class="btn btn-primary">
+    <a href="/Professor/AddClass?professorId=@Model.ProfessorId" class="btn btn-primary">
         + Add Class
     </a>
 
-    <a href="/Professor/AddStudents?professorId=@Model.ProfessorId"
-       class="btn btn-secondary me-2">
+    <a href="/Professor/AddStudents?professorId=@Model.ProfessorId" class="btn btn-secondary me-2">
         + Add Students
     </a>
 </div>

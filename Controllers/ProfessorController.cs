@@ -1,32 +1,112 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using UniversityApp.Models.Professor;
+using System.Data;
 
 public class ProfessorController : Controller
 {
     private readonly string connectionString =
         "Server=localhost\\SQLEXPRESS;Database=UniversityDB;Trusted_Connection=True;TrustServerCertificate=True;";
 
+    //[HttpGet]
+    //public IActionResult Dashboard(int professorId)
+    //{
+    //    var model = new ProfessorDashboardViewModel();
+    //    model.Classes = new List<ProfessorClassViewModel>();
+    //    model.ProfessorId = professorId;
+
+    //    using (SqlConnection conn = new SqlConnection(connectionString))
+    //    {
+    //        conn.Open();
+
+    //        // Get classes taught by professor
+    //        //string classQuery = @"
+    //        //    SELECT class_id, name
+    //        //    FROM Class
+    //        //    WHERE professor_id = @professorId";
+
+
+
+    //        using (SqlCommand cmd = new SqlCommand("sp_GetProfessorClasses", conn))
+    //        {
+    //            cmd.CommandType = CommandType.StoredProcedure;
+    //            cmd.Parameters.AddWithValue("@ProfessorId", professorId);
+
+    //            using (SqlDataReader reader = cmd.ExecuteReader())
+    //            {
+    //                while (reader.Read())
+    //                {
+    //                    model.Classes.Add(new ProfessorClassViewModel
+    //                    {
+    //                        ClassId = (int)reader["class_id"],
+    //                        ClassName = reader["name"].ToString(),
+    //                        Students = new List<StudentSimpleViewModel>()
+    //                    });
+    //                }
+    //            }
+    //        }
+
+    //        // For each class → get students
+    //        foreach (var cls in model.Classes)
+    //        {
+    //            string studentQuery = @"
+    //                SELECT s.student_id, s.name, s.surname, s.index_number, e.grade
+    //                FROM Enrollment e
+    //                JOIN Student s ON e.student_id = s.student_id
+    //                WHERE e.class_id = @classId";
+
+    //            using (SqlCommand cmd = new SqlCommand(studentQuery, conn))
+    //            {
+    //                cmd.Parameters.AddWithValue("@classId", cls.ClassId);
+    //                using (SqlDataReader reader = cmd.ExecuteReader())
+    //                {
+    //                    while (reader.Read())
+    //                    {
+    //                        cls.Students.Add(new StudentSimpleViewModel
+    //                        {
+    //                            StudentId = (int)reader["student_id"],
+    //                            Name = reader["name"].ToString(),
+    //                            Surname = reader["surname"].ToString(),
+    //                            Index = reader["index_number"].ToString(),
+    //                            Grade = reader["grade"] == DBNull.Value ? null : (int)reader["grade"]
+    //                        });
+    //                    }
+    //                }
+    //            }
+    //            // --- Class statistics ---
+    //            var grades = cls.Students.Where(s => s.Grade.HasValue).Select(s => s.Grade.Value).ToList();
+    //            cls.Stats = new ClassStatistics
+    //            {
+    //                TotalStudents = cls.Students.Count,
+    //                GradedStudents = grades.Count,
+    //                AverageGrade = grades.Count > 0 ? grades.Average() : (double?)null,
+    //                MedianGrade = grades.Count > 0 ? CalculateMedian(grades) : (double?)null,
+    //                ModeGrade = grades.Count > 0 ? CalculateMode(grades) : (int?)null
+    //            };
+    //        }
+    //    }
+    //    model.ProfessorId = professorId;
+    //    return View(model);
+    //}
     [HttpGet]
     public IActionResult Dashboard(int professorId)
     {
-        var model = new ProfessorDashboardViewModel();
-        model.Classes = new List<ProfessorClassViewModel>();
-        model.ProfessorId = professorId;
+        var model = new ProfessorDashboardViewModel
+        {
+            Classes = new List<ProfessorClassViewModel>(),
+            ProfessorId = professorId
+        };
 
         using (SqlConnection conn = new SqlConnection(connectionString))
         {
             conn.Open();
 
-            // Get classes taught by professor
-            string classQuery = @"
-                SELECT class_id, name
-                FROM Class
-                WHERE professor_id = @professorId";
-
-            using (SqlCommand cmd = new SqlCommand(classQuery, conn))
+            // 1️⃣ Get classes taught by professor
+            using (SqlCommand cmd = new SqlCommand("dbo.sp_GetProfessorClasses", conn))
             {
-                cmd.Parameters.AddWithValue("@professorId", professorId);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@ProfessorId", professorId);
+
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
@@ -41,18 +121,14 @@ public class ProfessorController : Controller
                 }
             }
 
-            // For each class → get students
+            // 2️⃣ For each class → get students
             foreach (var cls in model.Classes)
             {
-                string studentQuery = @"
-                    SELECT s.student_id, s.name, s.surname, s.index_number, e.grade
-                    FROM Enrollment e
-                    JOIN Student s ON e.student_id = s.student_id
-                    WHERE e.class_id = @classId";
-
-                using (SqlCommand cmd = new SqlCommand(studentQuery, conn))
+                using (SqlCommand cmd = new SqlCommand("dbo.sp_GetStudentsByClass", conn))
                 {
-                    cmd.Parameters.AddWithValue("@classId", cls.ClassId);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@ClassId", cls.ClassId);
+
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
@@ -68,11 +144,47 @@ public class ProfessorController : Controller
                         }
                     }
                 }
+
+                // 3️⃣ Class statistics (C# logic)
+                var grades = cls.Students
+                    .Where(s => s.Grade.HasValue)
+                    .Select(s => s.Grade.Value)
+                    .ToList();
+
+                cls.Stats = new ClassStatistics
+                {
+                    TotalStudents = cls.Students.Count,
+                    GradedStudents = grades.Count,
+                    AverageGrade = grades.Count > 0 ? grades.Average() : (double?)null,
+                    MedianGrade = grades.Count > 0 ? CalculateMedian(grades) : (double?)null,
+                    ModeGrade = grades.Count > 0 ? CalculateMode(grades) : (int?)null
+                };
             }
         }
-        model.ProfessorId = professorId;
+
         return View(model);
     }
+
+
+
+    // --- Helper methods ---
+    private double CalculateMedian(List<int> numbers)
+{
+    numbers.Sort();
+    int n = numbers.Count;
+    if (n % 2 == 1) return numbers[n / 2];
+    return (numbers[(n - 1) / 2] + numbers[n / 2]) / 2.0;
+}
+
+private int? CalculateMode(List<int> numbers)
+{
+    var groups = numbers.GroupBy(x => x)
+                        .OrderByDescending(g => g.Count())
+                        .ThenBy(g => g.Key)
+                        .ToList();
+    if (groups.Count == 0) return null;
+    return groups[0].Key;
+}
 
 
     [HttpPost]
