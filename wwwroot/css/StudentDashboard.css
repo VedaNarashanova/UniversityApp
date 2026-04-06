@@ -1,0 +1,152 @@
+﻿/* Background gradient for the page */
+body {
+    background: linear-gradient(135deg, #f0f4ff, #dbe6ff);
+    min-height: 100vh;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Container spacing */
+.container.mt-4 {
+    max-width: 1200px;
+}
+
+/* Tab cards */
+.tab-pane {
+    padding: 25px;
+    border-radius: 15px;
+    background: #ffffff;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    margin-top: 20px;
+}
+
+
+.nav-tabs .nav-link {
+    border-radius: 12px 12px 0 0;
+    color: #555;
+    font-weight: 600;
+    padding: 10px 25px;
+    margin-right: 5px;
+    transition: all 0.2s;
+}
+
+    .nav-tabs .nav-link.active {
+        background: linear-gradient(135deg, #6a11cb, #2575fc);
+        color: #fff !important;
+        border-color: #6a11cb #2575fc #fff;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+/* Student statistics cards */
+.stats-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ffecd2, #fcb69f);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    margin-bottom: 15px;
+    color: #333;
+    font-weight: 600;
+}
+
+    .stats-card i {
+        font-size: 1.5rem;
+        margin-right: 10px;
+    }
+
+ Tables 
+.table {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    background: #fff;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: #f5f7ff;
+}
+
+.table tbody tr:hover {
+    background-color: #e0ebff;
+}
+
+.table th {
+    background-color: #6a11cb;
+    color: white;
+    text-align: center;
+}
+
+.table td {
+    text-align: center;
+    vertical-align: middle;
+}
+
+
+
+/* Buttons */
+.btn-primary {
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    border: none;
+    border-radius: 10px;
+    padding: 8px 18px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+    .btn-primary:hover {
+        opacity: 0.9;
+    }
+
+.btn-success {
+    background: linear-gradient(135deg, #28a745, #1e7e34);
+    border: none;
+    border-radius: 10px;
+    padding: 8px 18px;
+    font-weight: 600;
+}
+
+    .btn-success:hover {
+        opacity: 0.9;
+    }
+
+/* Form inputs */
+.form-control {
+    border-radius: 8px;
+    padding: 8px 12px;
+}
+
+.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+
+.tab-content {
+    margin-top: 20px;
+}
+
+
+.personal-info {
+    background: linear-gradient(145deg, #ffffff, #e9f0ff);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.03);
+}
+
+
+
+.card-header {
+    font-size: 1.6rem;
+    font-weight: 300;
+    color: #ffffff;
+    background: linear-gradient(135deg, #a3b8ff, #90e0c9);
+    border-radius: 10px;
+    padding: 15px 20px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+

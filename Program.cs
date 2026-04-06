@@ -2,6 +2,17 @@ using Microsoft.AspNetCore.Routing.Patterns;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
+
+//var connString = builder.Configuration.GetConnectionString("UniversityDB");
+//if (string.IsNullOrEmpty(connString))
+//{
+//    throw new Exception("Connection string 'UniversityDB' not found in appsettings.json!");
+//}
+
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
@@ -26,7 +37,7 @@ app.UseAuthorization();
 // Redirect root URL to Login page
 app.MapGet("/", context =>
 {
-    context.Response.Redirect("/LogIn");
+    context.Response.Redirect("/Login/Login");
     return Task.CompletedTask;
 });
 
@@ -35,7 +46,8 @@ app.MapGet("/", context =>
 //MVC routes
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+     //pattern: "{controller=Login}/{action=Login}/{id?}");
+pattern: "{controller=Home}/{action=Index}/{id?}");
 
 //Razor Pages routes
 app.MapRazorPages();

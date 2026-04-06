@@ -5,20 +5,6 @@
 
 <h2>Add Student to Classes</h2>
 
-@* <form method="post" action="LoadAvailableClasses">
-    @Html.AntiForgeryToken()
-
-    <input type="hidden" asp-for="ProfessorId" />
-
-    <div class="mb-3">
-        <label>Student Index</label>
-        <input asp-for="StudentIndex" class="form-control" required />
-    </div>
-
-    <button type="submit" class="btn btn-secondary">
-        Load Classes
-    </button>
-</form> *@
 <form method="post" action="/Professor/LoadAvailableClasses">
     @Html.AntiForgeryToken()
 
@@ -43,8 +29,6 @@
     <form method="post" action="/Professor/AddStudents">
         @Html.AntiForgeryToken()
 
-        @* <input type="hidden" asp-for="ProfessorId" />
-        <input type="hidden" asp-for="StudentIndex" /> *@
         <input type="hidden" name="ProfessorId" value="@Model.ProfessorId" />
         <input type="hidden" name="StudentIndex" value="@Model.StudentIndex" />
 

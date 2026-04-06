@@ -11,11 +11,22 @@
   </ItemGroup>
 
   <ItemGroup>
+    <AdditionalFiles Include="bin\Debug\net10.0\appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AdditionalFiles>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Models\Student\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\images\bunly-hort-o9olH5LziVg-unsplash.jpg" />
+    <None Include="wwwroot\images\pang-yuhao-_kd5cxwZOK4-unsplash.jpg" />
   </ItemGroup>
 
 </Project>

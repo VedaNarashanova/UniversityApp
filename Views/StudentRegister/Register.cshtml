@@ -1,0 +1,148 @@
+﻿@model UniversityApp.Models.StudentRegisterViewModel
+
+@{
+    ViewData["Title"] = "Register";
+    Layout = "_Layout";
+}
+
+<h2>Student Registration</h2>
+
+<link href="~/css/registration.css" rel="stylesheet" />
+
+@* <form asp-action="Register" asp-controller="StudentRegister" method="post">
+    @Html.AntiForgeryToken()
+
+    <div asp-validation-summary="All" style="color:red"></div>
+
+    <div>
+        <label>Name</label>
+        <input asp-for="Name" />
+        <span asp-validation-for="Name" style="color:red"></span>
+    </div>
+
+    <div>
+        <label>Surname</label>
+        <input asp-for="Surname" />
+        <span asp-validation-for="Surname" style="color:red"></span>
+    </div>
+
+    <div>
+        <label>Date of Birth</label>
+        <input asp-for="DateOfBirth" type="date" />
+        <span asp-validation-for="DateOfBirth" style="color:red"></span>
+    </div>
+
+    <div>
+        <label>Address</label>
+        <input asp-for="Address" />
+        <span asp-validation-for="Address" style="color:red"></span>
+    </div>
+
+    <div>
+        <label>City</label>
+        <input asp-for="City" />
+        <span asp-validation-for="City" style="color:red"></span>
+    </div>
+
+    <div>
+        <label>Telephone</label>
+        <input asp-for="Telephone" />
+        <span asp-validation-for="Telephone" style="color:red"></span>
+    </div>
+
+    <div>
+        <label>Email</label>
+        <input asp-for="Email" />
+        <span asp-validation-for="Email" style="color:red"></span>
+    </div>
+
+    <div>
+        <label>Username</label>
+        <input asp-for="Username" />
+        <span asp-validation-for="Username" style="color:red"></span>
+    </div>
+
+    <div>
+        <label>Password</label>
+        <input asp-for="Password" type="password" />
+        <span asp-validation-for="Password" style="color:red"></span>
+    </div>
+
+    <button type="submit">Register</button>
+</form> *@
+<form asp-action="Register" asp-controller="StudentRegister" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="form-grid">
+
+        <div class="form-group">
+            <label>Name</label>
+            <input asp-for="Name" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label>Surname</label>
+            <input asp-for="Surname" />
+            <span asp-validation-for="Surname" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label>Date of Birth</label>
+            <input asp-for="DateOfBirth" type="date" />
+            <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label>Telephone</label>
+            <input asp-for="Telephone" />
+            <span asp-validation-for="Telephone" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label>Address</label>
+            <input asp-for="Address" />
+            <span asp-validation-for="Address" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label>City</label>
+            <input asp-for="City" />
+            <span asp-validation-for="City" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label>Email</label>
+            <input asp-for="Email" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label>Username</label>
+            <input asp-for="Username" />
+            <span asp-validation-for="Username" class="text-danger"></span>
+        </div>
+
+        <div class="form-group full-width">
+            <label>Password</label>
+            <input asp-for="Password" type="password" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+
+    </div>
+
+    <button type="submit">Register</button>
+</form>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <p style="color:red">@Model.ErrorMessage</p>
+}
+
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+    <div class="success-message-top">
+        <span>@Model.SuccessMessage</span>
+        <a asp-controller="Login" asp-action="Login" class="btn btn-sm btn-outline-primary ms-3">Go to Login</a>
+    </div>
+}

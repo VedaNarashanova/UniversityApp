@@ -1,44 +1,104 @@
-﻿.login-container {
-    min-height: 80vh;
+﻿/* Page background */
+/*body {
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    min-height: 100vh;
+}*/
+body {
+    /*    background-image: url('../images/bunly-hort-o9olh5lzivg-unsplash.jpg');*/
+    background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('../images/bunly-hort-o9olh5lzivg-unsplash.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+}
+
+/* Center container */
+.login-container {
+    min-height: 85vh;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
+/* Card */
 .login-card {
-    width: 400px;
-    padding: 30px;
-    border-radius: 10px;
-    background-color: white;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    width: 420px;
+    padding: 40px;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); /* slightly softer shadow */
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+    .login-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25); /* subtle lift shadow */
+    }
+
+/* Title */
 .login-title {
     text-align: center;
-    margin-bottom: 25px;
-    font-weight: 600;
+    margin-bottom: 30px;
+    font-weight: 700;
+    color: #1e3c72;
 }
+
+/* Inputs */
+.form-control {
+    border-radius: 8px;
+    padding: 10px 12px 10px 40px;
+    border: 1px solid #ccc;
+    transition: all 0.2s ease;
+}
+
+    .form-control:focus {
+        border-color: #6a11cb;
+        box-shadow: 0 0 0 0.15rem rgba(106, 17, 203, 0.25); /* match login gradient */
+    }
 
 .login-button {
     width: 100%;
+    border-radius: 10px; /* match the style in your modern buttons */
+    padding: 8px 18px; /* slightly smaller padding for a sleeker look */
+    font-weight: 600;
+    background: linear-gradient(135deg, #6a11cb, #2575fc); /* modern gradient */
+    border: none;
+    color: #fff; /* make text white */
+    transition: all 0.2s ease;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* subtle shadow */
 }
 
-
-.register-container {
-    margin-top: 15px;
-    text-align: center;
-}
-
-    .register-container .btn {
-        padding: 10px 20px;
-        background-color: #28a745; /* green */
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        text-decoration: none; /* remove underline */
+    .login-button:hover {
+        opacity: 0.95;
+        transform: translateY(-2px); /* subtle lift on hover */
     }
 
-        .register-container .btn:hover {
-            background-color: #218838; /* darker green on hover */
-        }
+.register-container .btn {
+    padding: 8px 18px;
+    background: linear-gradient(135deg, #1e7e34, #28a745); /* DARKER to BRIGHTER */
+    border-radius: 10px;
+    font-weight: 600;
+    border: none;
+    color: #fff;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    
+}
+
+    .register-container .btn:hover {
+        opacity: 0.95;
+        transform: translateY(-2px);
+    }
+
+/* Error message */
+.alert-danger {
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+body, .login-card, .form-control, .login-button, .register-container .btn {
+    font-family: 'Segoe UI', sans-serif;
+}

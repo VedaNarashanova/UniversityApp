@@ -1,42 +1,61 @@
 ﻿@model UniversityApp.Models.Professor.ProfessorDashboardViewModel
+
 @{
     Layout = "_Layout";
 }
+<link href="~/css/StudentDashboard.css" rel="stylesheet" />
+
 
 <h2>Professor Dashboard</h2>
+
+@*Show Success/Error Messages*@
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
 
 @foreach (var cls in Model.Classes)
 {
     <div class="card mb-4">
-        <div class="card-header">
-            <strong>@cls.ClassName</strong>
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <strong class="class-header">@cls.ClassName</strong>
+
+            @*Edit & Delete Buttons for Class *@
+            <div>
+                <a href="/Professor/EditClass?classId=@cls.ClassId" class="btn btn-sm btn-warning me-1">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+
+                <form method="post" action="/Professor/DeleteClass" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="classId" value="@cls.ClassId" />
+                    <input type="hidden" name="professorId" value="@Model.ProfessorId" />
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this class?');">
+                        <i class="bi bi-trash"></i> Delete
+                    </button>
+                </form>
+            </div>
         </div>
 
         <div class="card-body">
 
-            @* --- Class Statistics --- *@
+            @* Class Statistics *@
             @if (cls.Stats != null)
             {
                 <div class="mb-3 row text-center">
-                    <div class="col">
-                        <strong>Total Students:</strong> @cls.Stats.TotalStudents
-                    </div>
-                    <div class="col">
-                        <strong>Graded Students:</strong> @cls.Stats.GradedStudents
-                    </div>
-                    <div class="col">
-                        <strong>Average Grade:</strong> @(cls.Stats.AverageGrade.HasValue? cls.Stats.AverageGrade.Value.ToString("0.00") : "-")
-                    </div>
-                    <div class="col">
-                        <strong>Median Grade:</strong> @(cls.Stats.MedianGrade.HasValue? cls.Stats.MedianGrade.Value.ToString("0.00") : "-")
-                    </div>
-                    <div class="col">
-                        <strong>Mode Grade:</strong> @(cls.Stats.ModeGrade.HasValue? cls.Stats.ModeGrade.Value.ToString() : "-")
-                    </div>
+                    <div class="col"><strong>Total Students:</strong> @cls.Stats.TotalStudents</div>
+                    <div class="col"><strong>Graded Students:</strong> @cls.Stats.GradedStudents</div>
+                    <div class="col"><strong>Average Grade:</strong> @(cls.Stats.AverageGrade.HasValue? cls.Stats.AverageGrade.Value.ToString("0.00") : "-")</div>
+                    <div class="col"><strong>Median Grade:</strong> @(cls.Stats.MedianGrade.HasValue? cls.Stats.MedianGrade.Value.ToString("0.00") : "-")</div>
+                    <div class="col"><strong>Mode Grade:</strong> @(cls.Stats.ModeGrade.HasValue? cls.Stats.ModeGrade.Value.ToString() : "-")</div>
                 </div>
             }
 
-            @* --- Student Table --- *@
+            @*  Student Table *@
             @if (cls.Students.Count == 0)
             {
                 <p>No students enrolled.</p>
@@ -60,7 +79,7 @@
                                 <td>@student.Index</td>
                                 <td>@student.Name</td>
                                 <td>@student.Surname</td>
-                                <td>
+                                <td class="d-flex justify-content-center align-items-center">
                                     <form method="post" action="/Professor/SetGrade" class="d-flex gap-1">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="studentId" value="@student.StudentId" />
@@ -106,7 +125,7 @@
         + Add Class
     </a>
 
-    <a href="/Professor/AddStudents?professorId=@Model.ProfessorId" class="btn btn-secondary me-2">
+    <a href="/Professor/AddStudents?professorId=@Model.ProfessorId" class="btn btn-secondary ms-2">
         + Add Students
     </a>
 </div>

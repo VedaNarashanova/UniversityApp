@@ -5,7 +5,7 @@
     string activeTab = ViewBag.ActiveTab ?? "classes";
 }
 
-
+<link href="~/css/studentdashboard.css" rel="stylesheet" />
 
 <div class="container mt-4">
     <h2>Student Dashboard</h2>
@@ -159,28 +159,7 @@
 </div>
 
 
-@* <script>
-    const emailInput = document.querySelector('input[name="Email"]');
-    const saveButton = document.getElementById('saveButton');
-    const emailError = document.getElementById('emailError');
 
-    function validateEmail() {
-        const email = emailInput.value.trim();
-        const valid = email.endsWith("@@gmail.com") || email.endsWith("@@yahoo.com");
-
-        if (!valid) {
-            emailError.style.display = "block";
-            saveButton.disabled = true;
-        } else {
-            emailError.style.display = "none";
-            saveButton.disabled = false;
-        }
-    }
-
-    // Validate on page load and on every input
-    validateEmail();
-    emailInput.addEventListener('input', validateEmail);
-</script> *@
 <script>
     const emailInput = document.querySelector('input[name="Email"]');
     const phoneInput = document.querySelector('input[name="Phone"]');

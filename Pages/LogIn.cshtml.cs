@@ -1,92 +1,103 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Data.SqlClient;
-using System;
+﻿//using Microsoft.AspNetCore.Mvc;
+//using Microsoft.AspNetCore.Mvc.RazorPages;
+//using Microsoft.Data.SqlClient;
+//using System;
 
-namespace UniversityApp.Pages
-{
-    public class LogInModel : PageModel
-    {
-        [BindProperty]
-        public string Username { get; set; }
+//namespace UniversityApp.Pages
+//{
+//    public class LogInModel : PageModel
+//    {
+//        [BindProperty]
+//        public string Username { get; set; }
 
-        [BindProperty]
-        public string Password { get; set; }
+//        [BindProperty]
+//        public string Password { get; set; }
 
-        public string ErrorMessage { get; set; }
+//        public string ErrorMessage { get; set; }
 
-        public void OnGet()
-        {
-        }
+//        public void OnGet()
+//        {
+//        }
 
-        // 🔹 Get student_id from user_id
-        private int GetStudentId(int userId)
-        {
-            using SqlConnection conn = new SqlConnection(
-                "Server=localhost\\SQLEXPRESS;Database=UniversityDB;Trusted_Connection=True;TrustServerCertificate=True;");
-            conn.Open();
+//        // 🔹 Get student_id from user_id
+//        private int GetStudentId(int userId)
+//        {
+//            using SqlConnection conn = new SqlConnection(
+//                "Server=localhost\\SQLEXPRESS;Database=UniversityDB;Trusted_Connection=True;TrustServerCertificate=True;");
+//            conn.Open();
 
-            string query = "SELECT student_id FROM Student WHERE user_id = @userId";
-            using SqlCommand cmd = new SqlCommand(query, conn);
-            cmd.Parameters.AddWithValue("@userId", userId);
+//            string query = "SELECT student_id FROM Student WHERE user_id = @userId";
+//            using SqlCommand cmd = new SqlCommand(query, conn);
+//            cmd.Parameters.AddWithValue("@userId", userId);
 
-            object result = cmd.ExecuteScalar();
+//            object result = cmd.ExecuteScalar();
 
-            if (result == null)
-                return 0;
+//            if (result == null)
+//                return 0;
 
-            return Convert.ToInt32(result);
-        }
+//            return Convert.ToInt32(result);
+//        }
 
-        public IActionResult OnPost()
-        {
-            string connectionString =
-                "Server=localhost\\SQLEXPRESS;Database=UniversityDB;Trusted_Connection=True;TrustServerCertificate=True;";
+//        public IActionResult OnPost()
+//        {
+//            // 🔹 Check if fields are empty first
+//            if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
+//            {
+//                ErrorMessage = "Please enter both username and password";
+//                Username = string.Empty;
+//                Password = string.Empty;
+//                return Page();
+//            }
 
-            using SqlConnection conn = new SqlConnection(connectionString);
-            conn.Open();
+//            string connectionString =
+//                "Server=localhost\\SQLEXPRESS;Database=UniversityDB;Trusted_Connection=True;TrustServerCertificate=True;";
 
-            string query = "SELECT user_id, role FROM dbo.Users WHERE username = @username AND password = @password";
+//            using SqlConnection conn = new SqlConnection(connectionString);
+//            conn.Open();
 
-            using SqlCommand cmd = new SqlCommand(query, conn);
-            cmd.Parameters.AddWithValue("@username", Username);
-            cmd.Parameters.AddWithValue("@password", Password);
+//            string query = "SELECT user_id, role, password FROM dbo.Users WHERE username = @username";
 
-            using SqlDataReader reader = cmd.ExecuteReader();
+//            using SqlCommand cmd = new SqlCommand(query, conn);
+//            cmd.Parameters.AddWithValue("@username", Username);  // safe now, Username is not null
 
-            if (reader.Read())
-            {
-                int userId = (int)reader["user_id"];
-                string role = reader["role"].ToString();
+//            using SqlDataReader reader = cmd.ExecuteReader();
 
-                reader.Close(); // REQUIRED before new DB query
+//            if (reader.Read())
+//            {
+//                string storedPassword = reader["password"].ToString();
 
-                if (role == "student")
-                {
-                    int studentId = GetStudentId(userId);
+//                if (storedPassword != Password)
+//                {
+//                    ErrorMessage = "Invalid username or password";
+//                    Username = string.Empty;
+//                    Password = string.Empty;
+//                    return Page();
+//                }
 
-                    System.Diagnostics.Debug.WriteLine("LOGIN studentId = " + studentId);
+//                int userId = (int)reader["user_id"];
+//                string role = reader["role"].ToString();
+//                reader.Close();
 
-                    return RedirectToAction(
-                        "Dashboard",
-                        "Student",
-                        new { studentId = studentId }
-                    );
-                }
+//                if (role == "student")
+//                {
+//                    int studentId = GetStudentId(userId);
+//                    return RedirectToAction("Dashboard", "Student", new { studentId = studentId });
+//                }
 
-                if (role == "professor")
-                {
-                    return RedirectToAction(
-                        "Dashboard",
-                        "Professor",
-                        new { professorId = userId }
-                    );
-                }
+//                if (role == "professor")
+//                {
+//                    return RedirectToAction("Dashboard", "Professor", new { professorId = userId });
+//                }
+//            }
+//            else
+//            {
+//                // Username not found
+//                ErrorMessage = "Invalid username or password";
+//                Username = string.Empty;
+//                Password = string.Empty;
+//            }
 
-            }
-
-            ErrorMessage = "Invalid username or password";
-            return Page();
-        }
-    }
-}
+//            return Page();
+//        }
+//    }
+//}

@@ -255,10 +255,18 @@ namespace UniversityApp.Controllers
 {
     public class StudentController : Controller
     {
-        private readonly string connectionString =
-            "Server=localhost\\SQLEXPRESS;Database=UniversityDB;Trusted_Connection=True;TrustServerCertificate=True;";
+        //private readonly string connectionString =
+        //    "Server=localhost\\SQLEXPRESS;Database=UniversityDB;Trusted_Connection=True;TrustServerCertificate=True;";
 
-        // ------------------------------------------------------------------
+        private readonly string connectionString;
+
+        public StudentController(IConfiguration configuration)
+        {
+            //connectionString = configuration.GetConnectionString("UniversityDB");
+            connectionString = configuration.GetConnectionString("UniversityDB")
+                           ?? throw new Exception("Connection string 'UniversityDB' not found!");
+        }
+        // GET: Student Dashboard
         [HttpGet]
         public IActionResult Dashboard(int studentId, string activeTab = "classes")
         {
@@ -273,7 +281,7 @@ namespace UniversityApp.Controllers
             using SqlConnection conn = new SqlConnection(connectionString);
             conn.Open();
 
-            // 1️⃣ Enrolled classes + grades
+            // Enrolled classes + grades
             using (SqlCommand cmd = new SqlCommand("dbo.sp_GetStudentClassesAndGrades", conn))
             {
                 cmd.CommandType = CommandType.StoredProcedure;
@@ -290,7 +298,7 @@ namespace UniversityApp.Controllers
                 }
             }
 
-            // 2️⃣ Grade statistics (C# logic stays)
+            //Grade statistics 
             var gradedGrades = model.ClassesAndGrades
                 .Where(c => c.Grade.HasValue)
                 .Select(c => c.Grade.Value)
@@ -317,7 +325,7 @@ namespace UniversityApp.Controllers
                     .First().Key;
             }
 
-            // 3️⃣ Personal info
+            //Personal info
             using (SqlCommand cmd = new SqlCommand("dbo.sp_GetStudentInfo", conn))
             {
                 cmd.CommandType = CommandType.StoredProcedure;
@@ -337,7 +345,7 @@ namespace UniversityApp.Controllers
                 }
             }
 
-            // 4️⃣ Available classes
+            //Available classes
             using (SqlCommand cmd = new SqlCommand("dbo.sp_GetAvailableClassesForStudentDashboard", conn))
             {
                 cmd.CommandType = CommandType.StoredProcedure;
@@ -360,7 +368,7 @@ namespace UniversityApp.Controllers
             return View(model);
         }
 
-        // ------------------------------------------------------------------
+        // POST: Student Personal Info
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Dashboard(StudentDashboardViewModel model, string formType)
@@ -384,7 +392,7 @@ namespace UniversityApp.Controllers
             return RedirectToAction("Dashboard", new { studentId = model.StudentId, activeTab = "personal" });
         }
 
-        // ------------------------------------------------------------------
+        //POST: Student Enroll
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Enroll(int studentId, int classId)

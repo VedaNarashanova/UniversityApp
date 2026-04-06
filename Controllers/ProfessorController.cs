@@ -1,80 +1,81 @@
-﻿//using Microsoft.AspNetCore.Mvc;
+﻿
+//using Microsoft.AspNetCore.Mvc;
 //using Microsoft.Data.SqlClient;
 //using UniversityApp.Models.Professor;
 //using System.Data;
 
 //public class ProfessorController : Controller
 //{
-//    private readonly string connectionString =
-//        "Server=localhost\\SQLEXPRESS;Database=UniversityDB;Trusted_Connection=True;TrustServerCertificate=True;";
+//    //private readonly string connectionString =
+//    //    "Server=localhost\\SQLEXPRESS;Database=UniversityDB;Trusted_Connection=True;TrustServerCertificate=True;";
 
-//[HttpGet]
-//public IActionResult Dashboard(int professorId)
-//{
-//    var model = new ProfessorDashboardViewModel();
-//    model.Classes = new List<ProfessorClassViewModel>();
-//    model.ProfessorId = professorId;
+//    private readonly string connectionString;
 
-//    using (SqlConnection conn = new SqlConnection(connectionString))
+//    public ProfessorController(IConfiguration configuration)
 //    {
+//        //connectionString = configuration.GetConnectionString("UniversityDB");
+//        connectionString = configuration.GetConnectionString("UniversityDB")
+//                       ?? throw new Exception("Connection string 'UniversityDB' not found!");
+//    }
+
+//    //GET:  DASHBOARD
+//    [HttpGet]
+//    public IActionResult Dashboard(int professorId)
+//    {
+//        var model = new ProfessorDashboardViewModel
+//        {
+//            ProfessorId = professorId,
+//            Classes = new List<ProfessorClassViewModel>()
+//        };
+
+//        using SqlConnection conn = new SqlConnection(connectionString);
 //        conn.Open();
 
-//        // Get classes taught by professor
-//        //string classQuery = @"
-//        //    SELECT class_id, name
-//        //    FROM Class
-//        //    WHERE professor_id = @professorId";
-
-
-
-//        using (SqlCommand cmd = new SqlCommand("sp_GetProfessorClasses", conn))
+//        // Get professor classes
+//        using (SqlCommand cmd = new SqlCommand("dbo.sp_GetProfessorClasses", conn))
 //        {
 //            cmd.CommandType = CommandType.StoredProcedure;
 //            cmd.Parameters.AddWithValue("@ProfessorId", professorId);
 
-//            using (SqlDataReader reader = cmd.ExecuteReader())
+//            using SqlDataReader reader = cmd.ExecuteReader();
+//            while (reader.Read())
 //            {
-//                while (reader.Read())
+//                model.Classes.Add(new ProfessorClassViewModel
 //                {
-//                    model.Classes.Add(new ProfessorClassViewModel
-//                    {
-//                        ClassId = (int)reader["class_id"],
-//                        ClassName = reader["name"].ToString(),
-//                        Students = new List<StudentSimpleViewModel>()
-//                    });
-//                }
+//                    ClassId = (int)reader["class_id"],
+//                    ClassName = reader["name"].ToString(),
+//                    Students = new List<StudentSimpleViewModel>()
+//                });
 //            }
 //        }
 
-//        // For each class → get students
+//        // Get students per class
 //        foreach (var cls in model.Classes)
 //        {
-//            string studentQuery = @"
-//                SELECT s.student_id, s.name, s.surname, s.index_number, e.grade
-//                FROM Enrollment e
-//                JOIN Student s ON e.student_id = s.student_id
-//                WHERE e.class_id = @classId";
+//            using SqlCommand cmd = new SqlCommand("dbo.sp_GetStudentsByClass", conn);
+//            cmd.CommandType = CommandType.StoredProcedure;
+//            cmd.Parameters.AddWithValue("@ClassId", cls.ClassId);
 
-//            using (SqlCommand cmd = new SqlCommand(studentQuery, conn))
+//            using SqlDataReader reader = cmd.ExecuteReader();
+//            while (reader.Read())
 //            {
-//                cmd.Parameters.AddWithValue("@classId", cls.ClassId);
-//                using (SqlDataReader reader = cmd.ExecuteReader())
+//                //if we want to filter only the students with grade above 8 
+//                // if (gradeValue.HasValue && gradeValue.Value > 8){}
+//                cls.Students.Add(new StudentSimpleViewModel
 //                {
-//                    while (reader.Read())
-//                    {
-//                        cls.Students.Add(new StudentSimpleViewModel
-//                        {
-//                            StudentId = (int)reader["student_id"],
-//                            Name = reader["name"].ToString(),
-//                            Surname = reader["surname"].ToString(),
-//                            Index = reader["index_number"].ToString(),
-//                            Grade = reader["grade"] == DBNull.Value ? null : (int)reader["grade"]
-//                        });
-//                    }
-//                }
+//                    StudentId = (int)reader["student_id"],
+//                    Name = reader["name"].ToString(),
+//                    Surname = reader["surname"].ToString(),
+//                    Index = reader["index_number"].ToString(),
+//                    Grade = reader["grade"] == DBNull.Value ? null : (int)reader["grade"]
+//                });
 //            }
-//            // --- Class statistics ---
-//            var grades = cls.Students.Where(s => s.Grade.HasValue).Select(s => s.Grade.Value).ToList();
+
+//            var grades = cls.Students
+//                .Where(s => s.Grade.HasValue)
+//                .Select(s => s.Grade.Value)
+//                .ToList();
+
 //            cls.Stats = new ClassStatistics
 //            {
 //                TotalStudents = cls.Students.Count,
@@ -84,33 +85,11 @@
 //                ModeGrade = grades.Count > 0 ? CalculateMode(grades) : (int?)null
 //            };
 //        }
+
+//        return View(model);
 //    }
-//    model.ProfessorId = professorId;
-//    return View(model);
-//}
 
-
-
-//    // --- Helper methods ---
-//    private double CalculateMedian(List<int> numbers)
-//{
-//    numbers.Sort();
-//    int n = numbers.Count;
-//    if (n % 2 == 1) return numbers[n / 2];
-//    return (numbers[(n - 1) / 2] + numbers[n / 2]) / 2.0;
-//}
-
-//private int? CalculateMode(List<int> numbers)
-//{
-//    var groups = numbers.GroupBy(x => x)
-//                        .OrderByDescending(g => g.Count())
-//                        .ThenBy(g => g.Key)
-//                        .ToList();
-//    if (groups.Count == 0) return null;
-//    return groups[0].Key;
-//}
-
-
+//    // POST: SET GRADE
 //    [HttpPost]
 //    [ValidateAntiForgeryToken]
 //    public IActionResult SetGrade(int studentId, int classId, int grade, int professorId)
@@ -118,58 +97,67 @@
 //        using SqlConnection conn = new SqlConnection(connectionString);
 //        conn.Open();
 
-//        string query = @"
-//                    UPDATE Enrollment
-//                    SET grade = @grade
-//                    WHERE student_id = @studentId AND class_id = @classId";
-
-//        using SqlCommand cmd = new SqlCommand(query, conn);
-//        cmd.Parameters.AddWithValue("@grade", grade);
-//        cmd.Parameters.AddWithValue("@studentId", studentId);
-//        cmd.Parameters.AddWithValue("@classId", classId);
+//        using SqlCommand cmd = new SqlCommand("dbo.sp_SetGrade", conn);
+//        cmd.CommandType = CommandType.StoredProcedure;
+//        cmd.Parameters.AddWithValue("@StudentId", studentId);
+//        cmd.Parameters.AddWithValue("@ClassId", classId);
+//        cmd.Parameters.AddWithValue("@Grade", grade);
 
 //        cmd.ExecuteNonQuery();
 
-//        // reload dashboard
-//        return RedirectToAction("Dashboard", new {professorId});
+//        return RedirectToAction("Dashboard", new { professorId });
 //    }
 
-
+//    // GET:ADD CLASS
+//    [HttpGet]
 //    public IActionResult AddClass(int professorId)
 //    {
-//        var model = new CreateClassViewModel
-//        {
-//            ProfessorId = professorId
-//        };
-//        return View(model);
+//        return View(new CreateClassViewModel { ProfessorId = professorId });
 //    }
-
+//    //POST:ADD CLASS
 //    [HttpPost]
 //    [ValidateAntiForgeryToken]
 //    public IActionResult AddClass(CreateClassViewModel model)
 //    {
-//        if(!ModelState.IsValid)
+//        if (!ModelState.IsValid)
 //            return View(model);
 
-//        using SqlConnection conn = new SqlConnection(connectionString);
-//        conn.Open();
+//        try
+//        {
+//            using SqlConnection conn = new SqlConnection(connectionString);
+//            conn.Open();
 
-//        string query = @"
-//                    INSERT INTO Class (name,semester,professor_id)
-//                    VALUES (@name, @semester, @professorId)";
+//            using SqlCommand cmd = new SqlCommand("dbo.sp_AddClass", conn);
+//            cmd.CommandType = CommandType.StoredProcedure;
+//            cmd.Parameters.AddWithValue("@Name", model.Name);
+//            cmd.Parameters.AddWithValue("@Semester", model.Semester);
+//            cmd.Parameters.AddWithValue("@ProfessorId", model.ProfessorId);
 
-//        using SqlCommand cmd = new SqlCommand(query, conn);
-//        cmd.Parameters.AddWithValue("@name", model.Name);
-//        cmd.Parameters.AddWithValue("@semester", model.Semester);
-//        cmd.Parameters.AddWithValue("@professorId", model.ProfessorId);
+//            cmd.ExecuteNonQuery();
 
-//        cmd.ExecuteNonQuery();
+//            return RedirectToAction("Dashboard", new { professorId = model.ProfessorId });
+//        }
+//        catch (SqlException ex)
+//        {
+//            // Check for unique constraint violation
+//            if (ex.Number == 2627 || ex.Number == 2601) // 2627 = UNIQUE constraint, 2601 = duplicate index
+//            {
+//                ModelState.AddModelError("", $"A class with the name '{model.Name}' already exists.");
+//                return View(model);
+//            }
 
-//        return RedirectToAction("Dashboard", new {professorId = model.ProfessorId});
+//            // Other SQL errors
+//            ModelState.AddModelError("", "Database error: " + ex.Message);
+//            return View(model);
+//        }
+//        catch (Exception ex)
+//        {
+//            ModelState.AddModelError("", "Error: " + ex.Message);
+//            return View(model);
+//        }
 //    }
 
-//    //___________________________________________________________________________________________________________
-
+//    //GET: ADD STUDENTS
 //    [HttpGet]
 //    public IActionResult AddStudents(int professorId)
 //    {
@@ -177,16 +165,13 @@
 //        {
 //            ProfessorId = professorId
 //        };
+
 //        using SqlConnection conn = new SqlConnection(connectionString);
 //        conn.Open();
 
-//        string query = @"
-//                    SELECT class_id, name
-//                    FROM Class
-//                    WHERE professor_id = @professorId";
-
-//        using SqlCommand cmd = new SqlCommand(query, conn);
-//        cmd.Parameters.AddWithValue("@professorId", professorId);
+//        using SqlCommand cmd = new SqlCommand("dbo.sp_GetProfessorClassesSimple", conn);
+//        cmd.CommandType = CommandType.StoredProcedure;
+//        cmd.Parameters.AddWithValue("@ProfessorId", professorId);
 
 //        using SqlDataReader reader = cmd.ExecuteReader();
 //        while (reader.Read())
@@ -198,33 +183,24 @@
 //            });
 //        }
 
-//        return View("AddStudents", model);
+//        return View(model);
 //    }
 
+//    //POST: Load Classes
 //    [HttpPost]
 //    [ValidateAntiForgeryToken]
 //    public IActionResult LoadAvailableClasses(AddStudentToClassViewModel model)
 //    {
-//        //return Content("HIT LOADAVAILABLECLASSES");
-//        if (string.IsNullOrEmpty(model.StudentIndex))
-//        {
-//            return Content("StudentIndex is EMPTY");
-//        }
 //        using SqlConnection conn = new SqlConnection(connectionString);
 //        conn.Open();
 
-//        // 1️⃣ Get student ID
 //        int studentId;
-//        string studentQuery = @"
-//        SELECT student_id
-//        FROM Student
-//        WHERE index_number = @index";
-
-//        using (SqlCommand cmd = new SqlCommand(studentQuery, conn))
+//        using (SqlCommand cmd = new SqlCommand("dbo.sp_GetStudentIdByIndex", conn))
 //        {
-//            cmd.Parameters.AddWithValue("@index", model.StudentIndex);
-//            var result = cmd.ExecuteScalar();
+//            cmd.CommandType = CommandType.StoredProcedure;
+//            cmd.Parameters.AddWithValue("@IndexNumber", model.StudentIndex);
 
+//            var result = cmd.ExecuteScalar();
 //            if (result == null)
 //            {
 //                ModelState.AddModelError("", "Student not found.");
@@ -234,20 +210,10 @@
 //            studentId = (int)result;
 //        }
 
-//        // 2️⃣ Get professor classes student is NOT enrolled in
-//        string classQuery = @"
-//        SELECT c.class_id, c.name
-//        FROM Class c
-//        WHERE c.professor_id = @professorId
-//        AND c.class_id NOT IN (
-//            SELECT e.class_id
-//            FROM Enrollment e
-//            WHERE e.student_id = @studentId
-//        )";
-
-//        using SqlCommand classCmd = new SqlCommand(classQuery, conn);
-//        classCmd.Parameters.AddWithValue("@professorId", model.ProfessorId);
-//        classCmd.Parameters.AddWithValue("@studentId", studentId);
+//        using SqlCommand classCmd = new SqlCommand("dbo.sp_GetAvailableClassesForStudent", conn);
+//        classCmd.CommandType = CommandType.StoredProcedure;
+//        classCmd.Parameters.AddWithValue("@ProfessorId", model.ProfessorId);
+//        classCmd.Parameters.AddWithValue("@StudentId", studentId);
 
 //        using SqlDataReader reader = classCmd.ExecuteReader();
 //        while (reader.Read())
@@ -263,92 +229,38 @@
 //        return View("AddStudents", model);
 //    }
 
+//    //POST: ADD STUDENT
 //    [HttpPost]
 //    [ValidateAntiForgeryToken]
 //    public IActionResult AddStudents(AddStudentToClassViewModel model)
 //    {
 //        if (model.SelectedClassIds == null || !model.SelectedClassIds.Any())
+//            return RedirectToAction("AddStudents", new { professorId = model.ProfessorId });
+
+//        using SqlConnection conn = new SqlConnection(connectionString);
+//        conn.Open();
+
+//        int studentId;
+//        using (SqlCommand cmd = new SqlCommand("dbo.sp_GetStudentIdByIndex", conn))
 //        {
-//            ModelState.AddModelError("", "No classes were selected.");
+//            cmd.CommandType = CommandType.StoredProcedure;
+//            cmd.Parameters.AddWithValue("@IndexNumber", model.StudentIndex);
+//            studentId = (int)cmd.ExecuteScalar();
 //        }
 
-//        if (!ModelState.IsValid)
+//        foreach (int classId in model.SelectedClassIds)
 //        {
-//            // 🔁 reload available classes again
-//            using SqlConnection conn = new SqlConnection(connectionString);
-//            conn.Open();
-
-//            int studentId;
-//            string studentQuery = "SELECT student_id FROM Student WHERE index_number = @index";
-//            using (SqlCommand cmd = new SqlCommand(studentQuery, conn))
-//            {
-//                cmd.Parameters.AddWithValue("@index", model.StudentIndex);
-//                studentId = (int)cmd.ExecuteScalar();
-//            }
-
-//            string classQuery = @"
-//            SELECT c.class_id, c.name
-//            FROM Class c
-//            WHERE c.professor_id = @professorId
-//            AND c.class_id NOT IN (
-//                SELECT e.class_id
-//                FROM Enrollment e
-//                WHERE e.student_id = @studentId
-//            )";
-
-//            using SqlCommand classCmd = new SqlCommand(classQuery, conn);
-//            classCmd.Parameters.AddWithValue("@professorId", model.ProfessorId);
-//            classCmd.Parameters.AddWithValue("@studentId", studentId);
-
-//            using SqlDataReader reader = classCmd.ExecuteReader();
-//            while (reader.Read())
-//            {
-//                model.Classes.Add(new ProfessorClassViewModel
-//                {
-//                    ClassId = (int)reader["class_id"],
-//                    ClassName = reader["name"].ToString()
-//                });
-//            }
-
-//            model.ClassesLoaded = true;
-//            return View("AddStudents", model);
+//            using SqlCommand cmd = new SqlCommand("dbo.sp_AddStudentToClass", conn);
+//            cmd.CommandType = CommandType.StoredProcedure;
+//            cmd.Parameters.AddWithValue("@StudentId", studentId);
+//            cmd.Parameters.AddWithValue("@ClassId", classId);
+//            cmd.ExecuteNonQuery();
 //        }
 
-//        // ✅ VALID → insert into Enrollment
-//        using (SqlConnection conn = new SqlConnection(connectionString))
-//        {
-//            conn.Open();
-
-//            int studentId;
-//            string studentQuery = "SELECT student_id FROM Student WHERE index_number = @index";
-//            using (SqlCommand cmd = new SqlCommand(studentQuery, conn))
-//            {
-//                cmd.Parameters.AddWithValue("@index", model.StudentIndex);
-//                studentId = (int)cmd.ExecuteScalar();
-//            }
-
-//            foreach (int classId in model.SelectedClassIds)
-//            {
-//                string insertQuery = @"
-//                IF NOT EXISTS (
-//                    SELECT 1 FROM Enrollment
-//                    WHERE student_id = @studentId AND class_id = @classId
-//                )
-//                INSERT INTO Enrollment (student_id, class_id)
-//                VALUES (@studentId, @classId)";
-
-//                using SqlCommand cmd = new SqlCommand(insertQuery, conn);
-//                cmd.Parameters.AddWithValue("@studentId", studentId);
-//                cmd.Parameters.AddWithValue("@classId", classId);
-//                cmd.ExecuteNonQuery();
-//            }
-//        }
-
-//        // ✅ REDIRECT (this part was already correct)
 //        return RedirectToAction("Dashboard", new { professorId = model.ProfessorId });
 //    }
-//    //_________________________________________________________________________________________________________
 
+//    //POST: REMOVE STUDENT
 //    [HttpPost]
 //    [ValidateAntiForgeryToken]
 //    public IActionResult RemoveStudent(int studentId, int classId, int professorId)
@@ -356,32 +268,133 @@
 //        using SqlConnection conn = new SqlConnection(connectionString);
 //        conn.Open();
 
-//        string query = @"
-//        DELETE FROM Enrollment
-//        WHERE student_id = @studentId AND class_id = @classId";
-
-//        using SqlCommand cmd = new SqlCommand(query, conn);
-//        cmd.Parameters.AddWithValue("@studentId", studentId);
-//        cmd.Parameters.AddWithValue("@classId", classId);
+//        using SqlCommand cmd = new SqlCommand("dbo.sp_RemoveStudentFromClass", conn);
+//        cmd.CommandType = CommandType.StoredProcedure;
+//        cmd.Parameters.AddWithValue("@StudentId", studentId);
+//        cmd.Parameters.AddWithValue("@ClassId", classId);
 
 //        cmd.ExecuteNonQuery();
 
-//        // redirect back to dashboard
+//        return RedirectToAction("Dashboard", new { professorId });
+//    }
+
+//    //Calculations for statistics
+//    private double CalculateMedian(List<int> numbers)
+//    {
+//        numbers.Sort();
+//        int n = numbers.Count;
+//        return n % 2 == 1
+//            ? numbers[n / 2]
+//            : (numbers[n / 2 - 1] + numbers[n / 2]) / 2.0;
+//    }
+
+//    private int? CalculateMode(List<int> numbers)
+//    {
+//        return numbers
+//            .GroupBy(x => x)
+//            .OrderByDescending(g => g.Count())
+//            .ThenBy(g => g.Key)
+//            .FirstOrDefault()?.Key;
+//    }
+
+
+//    // GET: EDIT CLASS
+//    [HttpGet]
+//    public IActionResult EditClass(int classId)
+//    {
+//        using SqlConnection conn = new SqlConnection(connectionString);
+//        conn.Open();
+
+//        using SqlCommand cmd = new SqlCommand("SELECT class_id, name, semester, professor_id FROM Class WHERE class_id = @ClassId", conn);
+//        cmd.Parameters.AddWithValue("@ClassId", classId);
+
+//        using SqlDataReader reader = cmd.ExecuteReader();
+//        if (reader.Read())
+//        {
+//            var model = new CreateClassViewModel
+//            {
+//                ClassId = classId,
+//                ProfessorId = (int)reader["professor_id"],
+//                Name = reader["name"].ToString(),
+//                Semester = Convert.ToInt32(reader["semester"])
+//            };
+//            TempData["ClassId"] = classId; // pass ID to POST
+//            return View(model);
+//        }
+
+//        return RedirectToAction("Dashboard");
+//    }
+
+//    //POST: EDIT CLASS
+//    [HttpPost]
+//    [ValidateAntiForgeryToken]
+//    public IActionResult EditClass(CreateClassViewModel model)
+//    {
+//        if (!ModelState.IsValid)
+//            return View(model);
+
+//        int classId = (int)TempData["ClassId"];
+
+//        try
+//        {
+//            using SqlConnection conn = new SqlConnection(connectionString);
+//            conn.Open();
+
+//            using SqlCommand cmd = new SqlCommand("UPDATE Class SET name=@Name, semester=@Semester WHERE class_id=@ClassId", conn);
+//            cmd.Parameters.AddWithValue("@Name", model.Name);
+//            cmd.Parameters.AddWithValue("@Semester", model.Semester);
+//            cmd.Parameters.AddWithValue("@ClassId", classId);
+
+//            cmd.ExecuteNonQuery();
+
+//            TempData["SuccessMessage"] = $"Class '{model.Name}' updated successfully!";
+//            return RedirectToAction("Dashboard", new { professorId = model.ProfessorId });
+//        }
+//        catch (SqlException ex) when (ex.Number == 2627)
+//        {
+//            ModelState.AddModelError("Name", "A class with this name already exists.");
+//            return View(model);
+//        }
+//    }
+
+//    // POST: DELETE CLASS
+//    [HttpPost]
+//    [ValidateAntiForgeryToken]
+//    public IActionResult DeleteClass(int classId, int professorId)
+//    {
+//        using SqlConnection conn = new SqlConnection(connectionString);
+//        conn.Open();
+
+//        using SqlCommand cmd = new SqlCommand("DELETE FROM Class WHERE class_id=@ClassId", conn);
+//        cmd.Parameters.AddWithValue("@ClassId", classId);
+
+//        cmd.ExecuteNonQuery();
+
+//        TempData["SuccessMessage"] = "Class deleted successfully!";
 //        return RedirectToAction("Dashboard", new { professorId });
 //    }
 
 //}
+
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
-using UniversityApp.Models.Professor;
 using System.Data;
+using System.Diagnostics;
+using System.Reflection;
+using UniversityApp.Models.Professor;
 
 public class ProfessorController : Controller
 {
-    private readonly string connectionString =
-        "Server=localhost\\SQLEXPRESS;Database=UniversityDB;Trusted_Connection=True;TrustServerCertificate=True;";
+    private readonly string connectionString;
 
-    // ========================= DASHBOARD =========================
+    public ProfessorController(IConfiguration configuration)
+    {
+        connectionString = configuration.GetConnectionString("UniversityDB")
+                       ?? throw new Exception("Connection string 'UniversityDB' not found!");
+    }
+
+    // DASHBOARD
     [HttpGet]
     public IActionResult Dashboard(int professorId)
     {
@@ -394,8 +407,8 @@ public class ProfessorController : Controller
         using SqlConnection conn = new SqlConnection(connectionString);
         conn.Open();
 
-        // Get professor classes
-        using (SqlCommand cmd = new SqlCommand("dbo.sp_GetProfessorClasses", conn))
+        // Get professor classes (simplified)
+        using (SqlCommand cmd = new SqlCommand("dbo.sp_GetProfessorClassesSimple", conn))
         {
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.AddWithValue("@ProfessorId", professorId);
@@ -409,6 +422,7 @@ public class ProfessorController : Controller
                     ClassName = reader["name"].ToString(),
                     Students = new List<StudentSimpleViewModel>()
                 });
+
             }
         }
 
@@ -450,7 +464,7 @@ public class ProfessorController : Controller
         return View(model);
     }
 
-    // ========================= SET GRADE =========================
+    // POST: SET GRADE
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult SetGrade(int studentId, int classId, int grade, int professorId)
@@ -469,13 +483,14 @@ public class ProfessorController : Controller
         return RedirectToAction("Dashboard", new { professorId });
     }
 
-    // ========================= ADD CLASS =========================
+    // GET: ADD CLASS
     [HttpGet]
     public IActionResult AddClass(int professorId)
     {
         return View(new CreateClassViewModel { ProfessorId = professorId });
     }
 
+    // POST: ADD CLASS
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult AddClass(CreateClassViewModel model)
@@ -483,21 +498,54 @@ public class ProfessorController : Controller
         if (!ModelState.IsValid)
             return View(model);
 
+        try
+        {
+            using SqlConnection conn = new SqlConnection(connectionString);
+            conn.Open();
+
+            using SqlCommand cmd = new SqlCommand("dbo.sp_AddClass", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@Name", model.Name);
+            cmd.Parameters.AddWithValue("@Semester", model.Semester);
+            cmd.Parameters.AddWithValue("@ProfessorId", model.ProfessorId);
+
+            cmd.ExecuteNonQuery();
+
+            return RedirectToAction("Dashboard", new { professorId = model.ProfessorId });
+        }
+        catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
+        {
+            ModelState.AddModelError("", $"A class with the name '{model.Name}' already exists.");
+            return View(model);
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError("", "Error: " + ex.Message);
+            return View(model);
+        }
+    }   
+
+    // POST: DELETE CLASS
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult DeleteClass(int classId, int professorId)
+    {
         using SqlConnection conn = new SqlConnection(connectionString);
         conn.Open();
 
-        using SqlCommand cmd = new SqlCommand("dbo.sp_AddClass", conn);
+        // Call procedure that deletes enrollments first
+        using SqlCommand cmd = new SqlCommand("dbo.sp_DeleteClassAndEnrollments", conn);
         cmd.CommandType = CommandType.StoredProcedure;
-        cmd.Parameters.AddWithValue("@Name", model.Name);
-        cmd.Parameters.AddWithValue("@Semester", model.Semester);
-        cmd.Parameters.AddWithValue("@ProfessorId", model.ProfessorId);
+        cmd.Parameters.AddWithValue("@ClassId", classId);
 
         cmd.ExecuteNonQuery();
 
-        return RedirectToAction("Dashboard", new { professorId = model.ProfessorId });
+        TempData["SuccessMessage"] = "Class deleted successfully!";
+        return RedirectToAction("Dashboard", new { professorId });
     }
 
-    // ========================= ADD STUDENTS =========================
+ 
+    //GET: ADD STUDENTS
     [HttpGet]
     public IActionResult AddStudents(int professorId)
     {
@@ -526,6 +574,7 @@ public class ProfessorController : Controller
         return View(model);
     }
 
+    //POST: Load Classes
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult LoadAvailableClasses(AddStudentToClassViewModel model)
@@ -568,6 +617,7 @@ public class ProfessorController : Controller
         return View("AddStudents", model);
     }
 
+    //POST: ADD STUDENT
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult AddStudents(AddStudentToClassViewModel model)
@@ -598,7 +648,7 @@ public class ProfessorController : Controller
         return RedirectToAction("Dashboard", new { professorId = model.ProfessorId });
     }
 
-    // ========================= REMOVE STUDENT =========================
+    // POST: REMOVE STUDENT
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult RemoveStudent(int studentId, int classId, int professorId)
@@ -616,7 +666,7 @@ public class ProfessorController : Controller
         return RedirectToAction("Dashboard", new { professorId });
     }
 
-    // ========================= HELPERS =========================
+    // HELPER calculations
     private double CalculateMedian(List<int> numbers)
     {
         numbers.Sort();
@@ -633,5 +683,92 @@ public class ProfessorController : Controller
             .OrderByDescending(g => g.Count())
             .ThenBy(g => g.Key)
             .FirstOrDefault()?.Key;
+    }
+
+
+    //GET: EDIT CLASS
+    [HttpGet]
+    public IActionResult EditClass(int classId)
+    {
+        Debug.WriteLine("EditClass called, classId=" + classId);
+        Trace.WriteLine("Debugging trace here");
+        using SqlConnection conn = new SqlConnection(connectionString);
+        conn.Open();
+
+        // Use stored procedure to get class by ID
+        using SqlCommand cmd = new SqlCommand("dbo.sp_GetClassById", conn);
+        cmd.CommandType = CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@ClassId", classId);
+
+
+        //Console.WriteLine(model.ClassId);
+        using SqlDataReader reader = cmd.ExecuteReader();
+        if (reader.Read())
+        {
+            // Prefill model for EditClass view
+            var model = new CreateClassViewModel
+            {
+                ClassId = (int)reader["class_id"],
+                ProfessorId = (int)reader["professor_id"],
+                Name = reader["name"].ToString(),
+                Semester = Convert.ToInt32(reader["semester"])
+            };
+            System.Diagnostics.Debug.WriteLine($"Model fetched: Name={model.Name}, Semester={model.Semester}, ProfessorId={model.ProfessorId}");
+            ModelState.Clear();
+            return View(model); // passes model to the view
+        }
+
+        TempData["ErrorMessage"] = "Class not found.";
+        //return RedirectToAction("Dashboard"); // fallback
+        return RedirectToAction("Dashboard", new { professorId = 0 });
+    }
+
+    // POST: EDIT CLASS
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult EditClass(CreateClassViewModel model)
+    {
+        // Debugging: log posted values
+        System.Diagnostics.Debug.WriteLine($"POST EditClass called: ClassId={model.ClassId}, Name={model.Name}, Semester={model.Semester}, ProfessorId={model.ProfessorId}");
+
+        if (!ModelState.IsValid)
+        {
+            foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+            {
+                System.Diagnostics.Debug.WriteLine("ModelState error: " + error.ErrorMessage);
+            }
+
+            // Return the same view with the model so user can correct it
+            return View(model);
+        }
+
+        try
+        {
+            using SqlConnection conn = new SqlConnection(connectionString);
+            conn.Open();
+
+            using SqlCommand cmd = new SqlCommand("dbo.sp_UpdateClass", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@ClassId", model.ClassId);
+            cmd.Parameters.AddWithValue("@Name", model.Name);
+            cmd.Parameters.AddWithValue("@Semester", model.Semester);
+
+            cmd.ExecuteNonQuery();
+
+            TempData["SuccessMessage"] = $"Class '{model.Name}' updated successfully!";
+
+            // Redirect to Dashboard after successful update
+            return RedirectToAction("Dashboard", new { professorId = model.ProfessorId });
+        }
+        catch (SqlException ex) when (ex.Number == 2627)
+        {
+            ModelState.AddModelError("Name", "A class with this name already exists.");
+            return View(model);
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError("", "Error: " + ex.Message);
+            return View(model);
+        }
     }
 }

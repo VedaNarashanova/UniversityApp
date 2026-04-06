@@ -1,0 +1,37 @@
+﻿@model UniversityApp.Models.Professor.CreateClassViewModel
+@{
+    ViewData["Title"] = "Edit Class";
+    Layout = "_Layout";
+}
+
+
+
+
+<h2>Edit Class</h2>
+
+<form action="/Professor/EditClass" method="post">
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" name="ClassId" value="@Model.ClassId" />
+    <input type="hidden" name="ProfessorId" value="@Model.ProfessorId" />
+
+    <div class="form-group mb-3">
+        <label for="Name" class="form-label">Name</label>
+        <input id="Name" name="Name" class="form-control" type="text" value="@Model.Name" required />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label for="Semester" class="form-label">Semester</label>
+        <input id="Semester" name="Semester" class="form-control" type="number" value="@Model.Semester" required />
+        <span asp-validation-for="Semester" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success">Save Changes</button>
+    <a href="/Professor/Dashboard?professorId=@Model.ProfessorId" class="btn btn-secondary ms-2">Cancel</a>
+</form>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -29,3 +29,12 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+.footer {
+    background-color: white;
+    color: #333;
+    padding: 10px 10px;
+    text-align: center;
+    border-top: 1px solid #ddd;
+    margin-top: 50px !important;
+}

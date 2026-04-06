@@ -1,77 +1,103 @@
-﻿
-.page-content{
-    max-width:400px;
-    margin:0 auto;
-    padding:30px 15px;
-}
-
-form {
-    background-color: #fff;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    width: 400px;
-   
+﻿body {
+    /* background gradient overlay + image */
+    background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('../images/pang-yuhao-_kd5cxwzok4-unsplash.jpg');
+    ;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+    font-family: 'Segoe UI', sans-serif;
 }
 
 h2 {
-    text-align: left;
-    margin-bottom: 20px;
-    color: #333;
+    color: #ffffff !important;
+    font-weight: 700; 
+    text-align: center;
+    margin-bottom: 30px;
 }
 
+/* Form grid layout */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 equal columns */
+    gap: 15px 20px;
+}
 
-label {
+/* Form groups */
+.form-group label {
     display: block;
     margin-bottom: 5px;
-    font-weight: bold;
-    color: #555;
+    font-weight: 700; 
+    color: #ffffff; 
 }
 
-
-
-input {
-    width: 100%;
-    padding: 8px 10px;
+.form-group input {
+    width: 100%; 
+    padding: 10px 12px;
     border: 1px solid #ccc;
-    border-radius: 6px;
+    border-radius: 8px;
     box-sizing: border-box;
+    transition: all 0.2s ease;
+    background-color: rgba(255,255,255,0.9); 
 }
 
-button {
-    width: 100%;
-    padding: 10px;
-    background-color: #0078d4;
-    color: white;
+    .form-group input:focus {
+        border-color: #2575fc; 
+        box-shadow: 0 0 0 0.3rem rgba(37, 117, 252, 0.3); 
+        outline: none;
+    }
+
+/* Submit button */
+button[type="submit"] {
+    width: auto;
+    min-width: 150px;
+    display: block;
+    margin: 25px auto 0 auto;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    color: #fff;
     border: none;
-    border-radius: 6px;
+    border-radius: 10px;
     cursor: pointer;
     font-size: 16px;
-    margin-top: 10px;
+    font-weight: 600;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
 }
 
-    button:hover {
-        background-color: #005a9e;
+    button[type="submit"]:hover {
+        opacity: 0.95;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.15);
     }
 
-p {
-    text-align: center;
+/* Make password field same size as other fields */
+.form-group input[type="password"] {
+    width: 50%; 
+    grid-column: auto; 
+}
+
+/* Optional: full-width for some fields if desired */
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+/* Success message banner */
+.success-message-top {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    padding: 12px 20px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     font-weight: bold;
+    text-align: center;
 }
-
-    p[style*="color:red"] {
-        color: #d9534f;
-    }
-
-    p[style*="color:green"] {
-        color: #28a745;
-    }
-
-a button {
-    margin-top: 10px;
-    background-color: #6c757d;
-}
-
-    a button:hover {
-        background-color: #495057;
-    }*/

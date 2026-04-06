@@ -6,7 +6,7 @@
         public string ClassName { get; set; }
         public List<StudentSimpleViewModel> Students { get; set; }
 
-        public ClassStatistics Stats { get; set; } // <-- Add this
+        public ClassStatistics Stats { get; set; } 
     }
 
 
